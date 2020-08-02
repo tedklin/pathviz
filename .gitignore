@@ -1,0 +1,75 @@
+# I use this directory to store a copy of the external dependencies that my
+# CMake setup fetches directly from git. This is to ensure functionality like
+# autocomplete still works locally.
+thirdparty/hidden
+
+# gdb
+.gdb_history
+
+# cmake
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+# Build files
+build/
+
+# conda
+environment.yml
+
+# mkdocs
+site/
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Python cache files
+__pycache__/
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Eclipse files
+.cproject
+.project
+language.settings.xml
+
+# VSCode files
+.vscode/
+
+# Qt Creator files
+CMakeLists.txt.user
