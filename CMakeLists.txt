@@ -124,9 +124,7 @@ include_directories(
 
 add_subdirectory(thirdparty/graphlib)
 
-add_executable(test_node src/test_node.cpp)
-target_compile_features(test_node PRIVATE cxx_std_17)
-target_link_libraries(test_node PRIVATE graphlib ${catkin_LIBRARIES})
+add_subdirectory(src)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -203,6 +201,15 @@ target_link_libraries(test_node PRIVATE graphlib ${catkin_LIBRARIES})
 #############
 ## Testing ##
 #############
+
+catkin_add_gtest(pathviz-test 
+  test/test_main.cpp
+  test/geometry/geometry_2d_test.cpp
+)
+
+if(TARGET pathviz-test)
+  target_link_libraries(pathviz-test pathviz)
+endif()
 
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_pathviz.cpp)
