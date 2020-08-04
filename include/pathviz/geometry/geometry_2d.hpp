@@ -71,5 +71,8 @@ struct Polygon {
   const std::vector<Point> polygon_;
 };
 
+// TODO: overload equality operator for Polygon, taking into account possible
+// offset and wrap-around
+
 }  // namespace geometry_2d
 }  // namespace pathviz

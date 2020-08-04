@@ -4,14 +4,14 @@
 
 using namespace pathviz;
 
-TEST(Geometry2dTest, Point) {
+TEST(Geometry2d, Point) {
   geometry_2d::Point p1{3, 0}, p2{0, 4}, p1_copy{3, 0};
   EXPECT_TRUE(p1 == p1_copy);
   EXPECT_FALSE(p1 == p2);
   EXPECT_DOUBLE_EQ(5, geometry_2d::distance_2d(p1, p2));
 }
 
-TEST(Geometry2dTest, IncidentEdges) {
+TEST(Geometry2d, IncidentEdges) {
   EXPECT_THROW(geometry_2d::Polygon line({{0, 0}, {3, 0}}), std::runtime_error);
 
   geometry_2d::Polygon triangle({{0, 0}, {3, 0}, {0, 4}});

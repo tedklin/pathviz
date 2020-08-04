@@ -10,6 +10,7 @@ namespace visibility_map {
 
 class Terrain {
  public:
+  Terrain() = default;
   Terrain(std::vector<geometry_2d::Polygon> obstacles);
 
   void AddObstacle(const geometry_2d::Polygon& obstacle);

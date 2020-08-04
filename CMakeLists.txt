@@ -205,6 +205,7 @@ add_subdirectory(src)
 catkin_add_gtest(pathviz-test 
   test/test_main.cpp
   test/geometry/geometry_2d_test.cpp
+  test/visibility_map/visibility_graph_test.cpp
 )
 
 if(TARGET pathviz-test)
