@@ -101,9 +101,13 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES pathviz
-#  CATKIN_DEPENDS roscpp
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    graphlib
+    pathviz
+  CATKIN_DEPENDS
+    roscpp
 #  DEPENDS system_lib
 )
 
@@ -114,9 +118,15 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
+
+add_subdirectory(thirdparty/graphlib)
+
+add_executable(test_node src/test_node.cpp)
+target_compile_features(test_node PRIVATE cxx_std_17)
+target_link_libraries(test_node PRIVATE graphlib ${catkin_LIBRARIES})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
