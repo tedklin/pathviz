@@ -24,5 +24,20 @@ std::set<geometry_2d::Point> Terrain::GetAllVertices() {
   return vertices;
 }
 
+// bool is_visible(const geometry_2d::Point& source,
+//                 const geometry_2d::Point& target,
+//                 const std::vector<geometry_2d::Edge>& active_edges) {
+//   // stuff
+// }
+
+// std::set<geometry_2d::Point> get_visible_vertices(
+//     const Terrain& terrain, const geometry_2d::Point& source) {
+//   // stuff
+// }
+
+// graphlib::Graph2d get_visibility_graph(const Terrain& terrain) {
+//   // stuff
+// }
+
 }  // namespace visibility_map
 }  // namespace pathviz

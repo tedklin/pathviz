@@ -14,6 +14,5 @@ TEST(VisibilityMap, Terrain) {
 
   std::set<geometry_2d::Point> vertices{
       {0, 0}, {3, 0}, {0, 4}, {-10, -10}, {-9, -10}, {-9, -9}, {-10, -9}};
-
   ASSERT_EQ(vertices, terrain.GetAllVertices());
 }
