@@ -57,8 +57,12 @@ double length(const LineSegment& e);
 // Angle (-pi, pi] from positive horizontal axis w.r.t. a source Point.
 double angle_from_horizontal(const Point& source, const Point& target);
 
+bool is_horizontal(const LineSegment& e);
+bool is_vertical(const LineSegment& e);
+
 double slope(const LineSegment& e);
 double y_intercept(const LineSegment& e);
+double x_intercept(const LineSegment& e);
 
 // Does not count common endpoints or any form of colinearity as an
 // intersection.

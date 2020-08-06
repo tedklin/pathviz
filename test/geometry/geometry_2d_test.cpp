@@ -14,7 +14,7 @@ TEST(Geometry2d, PointTest) {
   EXPECT_FALSE(p1 == p2);
 }
 
-TEST(Geometry2d, EdgeTest) {
+TEST(Geometry2d, LineSegmentTest) {
   LineSegment e{{3, 0}, {0, 4}};
   EXPECT_TRUE((Point{3, 0} == e.Other({0, 4})));
   EXPECT_TRUE((Point{0, 4} == e.Other({3, 0})));
@@ -29,6 +29,16 @@ TEST(Geometry2d, NumericalTest) {
                    geometry_2d::slope(LineSegment{{3, 0}, {0, 4}}));
   EXPECT_DOUBLE_EQ(geometry_2d::slope(LineSegment{{3, 0}, {0, 4}}),
                    geometry_2d::slope(LineSegment{{0, 4}, {3, 0}}));
+
+  EXPECT_DOUBLE_EQ(1, geometry_2d::y_intercept(LineSegment{{1, 2}, {2, 3}}));
+  EXPECT_DOUBLE_EQ(1, geometry_2d::y_intercept(LineSegment{{1, 1}, {4, 1}}));
+  EXPECT_THROW(geometry_2d::y_intercept(LineSegment{{1, 2}, {1, 1}}),
+               std::runtime_error);
+
+  EXPECT_DOUBLE_EQ(-1, geometry_2d::x_intercept(LineSegment{{1, 2}, {2, 3}}));
+  EXPECT_DOUBLE_EQ(1, geometry_2d::x_intercept(LineSegment{{1, 1}, {1, 4}}));
+  EXPECT_THROW(geometry_2d::x_intercept(LineSegment{{1, 1}, {2, 1}}),
+               std::runtime_error);
 }
 
 TEST(Geometry2d, IntersectionTest) {
