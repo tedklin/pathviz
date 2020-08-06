@@ -28,8 +28,6 @@ TEST(Geometry2d, NumericalTest) {
   EXPECT_DOUBLE_EQ((-4.0 / 3.0), geometry_2d::slope(Edge{{3, 0}, {0, 4}}));
   EXPECT_DOUBLE_EQ(geometry_2d::slope(Edge{{3, 0}, {0, 4}}),
                    geometry_2d::slope(Edge{{0, 4}, {3, 0}}));
-
-  EXPECT_ANY_THROW(geometry_2d::slope(Edge{{0, 0}, {0, 4}}));
 }
 
 TEST(Geometry2d, IntersectionTest) {
@@ -55,17 +53,24 @@ TEST(Geometry2d, IntersectionTest) {
   EXPECT_FALSE(
       geometry_2d::is_intersecting(Edge{{0, 0}, {1, 1}}, Edge{{0, 0}, {2, 2}}));
 
-  // common or close to common endpoints
+  // common endpoints
   EXPECT_FALSE(
       geometry_2d::is_intersecting(Edge{{0, 0}, {1, 1}}, Edge{{1, 1}, {2, 0}}));
+
+  // barely intersecting
   EXPECT_TRUE(geometry_2d::is_intersecting(Edge{{0, 0}, {1.0000001, 1.0000001}},
-                                           Edge{{1, 1}, {2, 0}}));
+                                           Edge{{0, 2}, {2, 0}}));
 }
 
-TEST(Geometry2d, IncidentEdgesTest) {
+TEST(Geometry2d, PolygonTest) {
   EXPECT_THROW(Polygon line({{0, 0}, {3, 0}}), std::runtime_error);
 
   Polygon triangle({{0, 0}, {3, 0}, {0, 4}});
+
+  std::cout << "triangle AllEdges ad-hoc test:\n";
+  for (const auto& edge : triangle.AllEdges()) {
+    std::cout << geometry_2d::to_string(edge) << '\n';
+  }
 
   EXPECT_THROW(auto incident_edges = triangle.IncidentEdges({4, 0}),
                std::runtime_error);

@@ -28,10 +28,6 @@ double angle_from_horizontal(const Point& source, const Point& target) {
   return std::atan2(dy, dx);
 }
 
-double angle_from_horizontal(const Edge& e) {
-  return angle_from_horizontal(e.from, e.to);
-}
-
 double slope(const Edge& e) {
   return (e.to.y - e.from.y) / (e.to.x - e.from.x);
 }
@@ -48,12 +44,12 @@ bool is_intersecting(const Edge& e1, const Edge& e2) {
     return false;  // colinear
   } else if (e1_is_vertical) {
     double y_intersect = slope(e2) * e1.from.x + y_intercept(e2);
-    return std::min(e1.from.y, e1.to.y) < y_intersect &&
-           y_intersect < std::max(e1.from.y, e1.to.y);
-  } else if (e2_is_vertical) {
-    double y_intersect = slope(e1) * e2.from.x + y_intercept(e1);
     return std::min(e2.from.y, e2.to.y) < y_intersect &&
            y_intersect < std::max(e2.from.y, e2.to.y);
+  } else if (e2_is_vertical) {
+    double y_intersect = slope(e1) * e2.from.x + y_intercept(e1);
+    return std::min(e1.from.y, e1.to.y) < y_intersect &&
+           y_intersect < std::max(e1.from.y, e1.to.y);
   }
 
   if (slope(e1) == slope(e2)) {
@@ -76,6 +72,15 @@ Polygon::Polygon(std::vector<Point> polygon) : polygon_(polygon) {
     throw std::runtime_error(
         "Polygon error: polygon must have at least 3 points");
   }
+}
+
+std::vector<Edge> Polygon::AllEdges() const {
+  std::vector<Edge> edges;
+  for (auto iter = polygon_.cbegin() + 1; iter != polygon_.cend(); ++iter) {
+    edges.push_back(Edge{*(iter - 1), *iter});
+  }
+  edges.push_back(Edge{polygon_.front(), polygon_.back()});
+  return edges;
 }
 
 std::pair<Edge, Edge> Polygon::IncidentEdges(Point from) const {

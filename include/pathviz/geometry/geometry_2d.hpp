@@ -54,8 +54,8 @@ inline std::string to_string(const Edge& p) {
 double distance(const Point& p1, const Point& p2);
 double length(const Edge& e);
 
+// Angle (-pi, pi] from positive horizontal axis w.r.t. a source Point.
 double angle_from_horizontal(const Point& source, const Point& target);
-double angle_from_horizontal(const Edge& e);
 
 double slope(const Edge& e);
 double y_intercept(const Edge& e);
@@ -69,6 +69,7 @@ bool is_intersecting(const Edge& e1, const Edge& e2);
 struct Polygon {
   Polygon(std::vector<Point> polygon);
 
+  std::vector<Edge> AllEdges() const;
   std::pair<Edge, Edge> IncidentEdges(Point from) const;
 
   const std::vector<Point> polygon_;
