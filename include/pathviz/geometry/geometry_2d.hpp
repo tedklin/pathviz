@@ -51,6 +51,8 @@ inline std::string to_string(const LineSegment& p) {
   return "[" + to_string(p.from) + "->" + to_string(p.to) + "]";
 }
 
+LineSegment reverse(const LineSegment& e);
+
 double distance(const Point& p1, const Point& p2);
 double length(const LineSegment& e);
 
@@ -74,6 +76,8 @@ struct Polygon {
   Polygon(std::vector<Point> polygon);
 
   std::vector<LineSegment> AllEdges() const;
+
+  // Incident edges pointing outwards from the given point.
   std::pair<LineSegment, LineSegment> IncidentEdges(Point from) const;
 
   const std::vector<Point> polygon_;

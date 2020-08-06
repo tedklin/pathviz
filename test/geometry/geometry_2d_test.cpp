@@ -19,6 +19,11 @@ TEST(Geometry2d, LineSegmentTest) {
   EXPECT_TRUE((Point{3, 0} == e.Other({0, 4})));
   EXPECT_TRUE((Point{0, 4} == e.Other({3, 0})));
   EXPECT_THROW(e.Other({0, 0}), std::runtime_error);
+
+  LineSegment e_reverse = geometry_2d::reverse(e);
+  EXPECT_TRUE((e_reverse == LineSegment{{0, 4}, {3, 0}}));
+  EXPECT_FALSE((e_reverse == LineSegment{{3, 0}, {0, 4}}));
+  EXPECT_TRUE((geometry_2d::reverse(e_reverse) == LineSegment{{3, 0}, {0, 4}}));
 }
 
 TEST(Geometry2d, NumericalTest) {

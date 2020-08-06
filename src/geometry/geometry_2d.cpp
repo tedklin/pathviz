@@ -18,6 +18,8 @@ Point LineSegment::Other(Point p) {
       "geometry_2d::LineSegment error: input Point p doesn't exist");
 }
 
+LineSegment reverse(const LineSegment& e) { return LineSegment{e.to, e.from}; }
+
 double distance(const Point& p1, const Point& p2) {
   return std::sqrt(std::pow(p2.x - p1.x, 2) + std::pow(p2.y - p1.y, 2));
 }
