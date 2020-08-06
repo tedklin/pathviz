@@ -8,35 +8,35 @@
 namespace pathviz {
 namespace geometry_2d {
 
-Point Edge::Other(Point p) {
+Point LineSegment::Other(Point p) {
   if (p == from) {
     return to;
   } else if (p == to) {
     return from;
   }
-  throw std::runtime_error("Edge error: input Point p doesn't exist");
+  throw std::runtime_error("LineSegment error: input Point p doesn't exist");
 }
 
 double distance(const Point& p1, const Point& p2) {
   return std::sqrt(std::pow(p2.x - p1.x, 2) + std::pow(p2.y - p1.y, 2));
 }
 
-double length(const Edge& e) { return distance(e.from, e.to); }
+double length(const LineSegment& e) { return distance(e.from, e.to); }
 
 double angle_from_horizontal(const Point& source, const Point& target) {
   double dx = target.x - source.x, dy = target.y - source.y;
   return std::atan2(dy, dx);
 }
 
-double slope(const Edge& e) {
+double slope(const LineSegment& e) {
   return (e.to.y - e.from.y) / (e.to.x - e.from.x);
 }
 
-double y_intercept(const Edge& e) { return e.to.y - slope(e) * e.to.x; }
+double y_intercept(const LineSegment& e) { return e.to.y - slope(e) * e.to.x; }
 
 // Does not count common endpoints or any form of colinearity as an
 // intersection.
-bool is_intersecting(const Edge& e1, const Edge& e2) {
+bool is_intersecting(const LineSegment& e1, const LineSegment& e2) {
   bool e1_is_vertical = e1.from.x == e1.to.x;
   bool e2_is_vertical = e2.from.x == e2.to.x;
 
@@ -74,16 +74,16 @@ Polygon::Polygon(std::vector<Point> polygon) : polygon_(polygon) {
   }
 }
 
-std::vector<Edge> Polygon::AllEdges() const {
-  std::vector<Edge> edges;
+std::vector<LineSegment> Polygon::AllEdges() const {
+  std::vector<LineSegment> edges;
   for (auto iter = polygon_.cbegin() + 1; iter != polygon_.cend(); ++iter) {
-    edges.push_back(Edge{*(iter - 1), *iter});
+    edges.push_back(LineSegment{*(iter - 1), *iter});
   }
-  edges.push_back(Edge{polygon_.front(), polygon_.back()});
+  edges.push_back(LineSegment{polygon_.front(), polygon_.back()});
   return edges;
 }
 
-std::pair<Edge, Edge> Polygon::IncidentEdges(Point from) const {
+std::pair<LineSegment, LineSegment> Polygon::IncidentEdges(Point from) const {
   auto iter = std::find(polygon_.cbegin(), polygon_.cend(), from);
   if (iter == polygon_.cend()) {
     throw std::runtime_error(
@@ -93,17 +93,17 @@ std::pair<Edge, Edge> Polygon::IncidentEdges(Point from) const {
   // All three cases here are mutually exclusive because a polygon has at
   // least 3 points.
   if (from == polygon_.front()) {
-    Edge e1{from, *(polygon_.cend() - 1)};
-    Edge e2{from, *(iter + 1)};
-    return std::pair<Edge, Edge>(e1, e2);
+    LineSegment e1{from, *(polygon_.cend() - 1)};
+    LineSegment e2{from, *(iter + 1)};
+    return std::pair<LineSegment, LineSegment>(e1, e2);
   } else if (from == polygon_.back()) {
-    Edge e1{from, *(iter - 1)};
-    Edge e2{from, *(polygon_.cbegin())};
-    return std::pair<Edge, Edge>(e1, e2);
+    LineSegment e1{from, *(iter - 1)};
+    LineSegment e2{from, *(polygon_.cbegin())};
+    return std::pair<LineSegment, LineSegment>(e1, e2);
   } else {
-    Edge e1{from, *(iter - 1)};
-    Edge e2{from, *(iter + 1)};
-    return std::pair<Edge, Edge>(e1, e2);
+    LineSegment e1{from, *(iter - 1)};
+    LineSegment e2{from, *(iter + 1)};
+    return std::pair<LineSegment, LineSegment>(e1, e2);
   }
 }
 

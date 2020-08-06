@@ -34,43 +34,43 @@ inline std::string to_string(const Point& p) {
   return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
 }
 
-struct Edge {
+struct LineSegment {
   Point from, to;
   Point Other(Point p);
 };
 
-inline bool operator==(const Edge& lhs, const Edge& rhs) {
+inline bool operator==(const LineSegment& lhs, const LineSegment& rhs) {
   return lhs.to == rhs.to && lhs.from == rhs.from;
 }
 
-inline bool operator!=(const Edge& lhs, const Edge& rhs) {
+inline bool operator!=(const LineSegment& lhs, const LineSegment& rhs) {
   return !operator==(lhs, rhs);
 }
 
-inline std::string to_string(const Edge& p) {
+inline std::string to_string(const LineSegment& p) {
   return "[" + to_string(p.from) + "->" + to_string(p.to) + "]";
 }
 
 double distance(const Point& p1, const Point& p2);
-double length(const Edge& e);
+double length(const LineSegment& e);
 
 // Angle (-pi, pi] from positive horizontal axis w.r.t. a source Point.
 double angle_from_horizontal(const Point& source, const Point& target);
 
-double slope(const Edge& e);
-double y_intercept(const Edge& e);
+double slope(const LineSegment& e);
+double y_intercept(const LineSegment& e);
 
 // Does not count common endpoints or any form of colinearity as an
 // intersection.
-bool is_intersecting(const Edge& e1, const Edge& e2);
+bool is_intersecting(const LineSegment& e1, const LineSegment& e2);
 
 // Adjacent pairs of vertices represent edges of the polygon; the vertices on
 // each end of the vector close the polygon.
 struct Polygon {
   Polygon(std::vector<Point> polygon);
 
-  std::vector<Edge> AllEdges() const;
-  std::pair<Edge, Edge> IncidentEdges(Point from) const;
+  std::vector<LineSegment> AllEdges() const;
+  std::pair<LineSegment, LineSegment> IncidentEdges(Point from) const;
 
   const std::vector<Point> polygon_;
 };
