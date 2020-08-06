@@ -25,30 +25,40 @@ TEST(Geometry2d, NumericalTest) {
   EXPECT_DOUBLE_EQ(5, geometry_2d::distance(Point{3, 0}, Point{0, 4}));
   EXPECT_DOUBLE_EQ(5, geometry_2d::length(Edge{{3, 0}, {0, 4}}));
 
-  ASSERT_DOUBLE_EQ((-4.0 / 3.0), geometry_2d::slope(Edge{{3, 0}, {0, 4}}));
-  ASSERT_DOUBLE_EQ(geometry_2d::slope(Edge{{3, 0}, {0, 4}}),
+  EXPECT_DOUBLE_EQ((-4.0 / 3.0), geometry_2d::slope(Edge{{3, 0}, {0, 4}}));
+  EXPECT_DOUBLE_EQ(geometry_2d::slope(Edge{{3, 0}, {0, 4}}),
                    geometry_2d::slope(Edge{{0, 4}, {3, 0}}));
 
+  EXPECT_ANY_THROW(geometry_2d::slope(Edge{{0, 0}, {0, 4}}));
+}
+
+TEST(Geometry2d, IntersectionTest) {
   // standard cases
-  ASSERT_TRUE(
+  EXPECT_TRUE(
       geometry_2d::is_intersecting(Edge{{0, 0}, {3, 3}}, Edge{{0, 3}, {3, 0}}));
-  ASSERT_FALSE(
+  EXPECT_FALSE(
       geometry_2d::is_intersecting(Edge{{0, 0}, {3, 3}}, Edge{{0, 7}, {7, 0}}));
 
-  // vertical and horizontal lines
-  ASSERT_TRUE(geometry_2d::is_intersecting(Edge{{0, -1}, {0, 1}},
-                                           Edge{{1, 0}, {-1, 0}}));
-  ASSERT_FALSE(geometry_2d::is_intersecting(Edge{{0, -1}, {0, 1}},
-                                            Edge{{1, 0}, {2, 0}}));
+  // vertical line
+  EXPECT_TRUE(geometry_2d::is_intersecting(Edge{{0, -1}, {0, 1}},
+                                           Edge{{1, 1}, {-1, -1}}));
+  EXPECT_FALSE(geometry_2d::is_intersecting(Edge{{0, -1}, {0, 1}},
+                                            Edge{{1, 1}, {2, 2}}));
+
+  // horizontal line
+  EXPECT_TRUE(geometry_2d::is_intersecting(Edge{{1, 0}, {-1, 0}},
+                                           Edge{{1, 1}, {-1, -1}}));
+  EXPECT_FALSE(geometry_2d::is_intersecting(Edge{{1, 0}, {-1, 0}},
+                                            Edge{{1, 1}, {2, 2}}));
 
   // overlapping colinear
-  ASSERT_FALSE(
+  EXPECT_FALSE(
       geometry_2d::is_intersecting(Edge{{0, 0}, {1, 1}}, Edge{{0, 0}, {2, 2}}));
 
   // common or close to common endpoints
-  ASSERT_FALSE(
+  EXPECT_FALSE(
       geometry_2d::is_intersecting(Edge{{0, 0}, {1, 1}}, Edge{{1, 1}, {2, 0}}));
-  ASSERT_TRUE(geometry_2d::is_intersecting(Edge{{0, 0}, {1.0001, 1.0001}},
+  EXPECT_TRUE(geometry_2d::is_intersecting(Edge{{0, 0}, {1.0000001, 1.0000001}},
                                            Edge{{1, 1}, {2, 0}}));
 }
 
