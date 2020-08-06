@@ -65,8 +65,10 @@ double x_intercept(const LineSegment& e) {
   return -y_intercept(e) / slope(e);
 }
 
-// Does not count common endpoints or any form of colinearity as an
-// intersection.
+bool tolerant_equals(double p, double q, double tol = 1e-2) {
+  return std::abs(p - q) < tol;
+}
+
 bool is_intersecting(const LineSegment& e1, const LineSegment& e2) {
   if (is_vertical(e1) && is_vertical(e2)) {
     return false;  // colinear

@@ -38,8 +38,8 @@ std::set<geometry_2d::Point> get_visible_vertices(
     const Terrain& terrain, const geometry_2d::Point& source,
     bool verbose = false);
 
-// graphlib::Graph2d get_visibility_graph(const Terrain& terrain,
-//                                        bool verbose = false);
+graphlib::Graph2d get_visibility_graph(const Terrain& terrain,
+                                       bool verbose = false);
 
 }  // namespace visibility_map
 }  // namespace pathviz

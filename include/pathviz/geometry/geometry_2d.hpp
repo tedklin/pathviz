@@ -66,8 +66,9 @@ double slope(const LineSegment& e);
 double y_intercept(const LineSegment& e);
 double x_intercept(const LineSegment& e);
 
-// Does not count common endpoints or any form of colinearity as an
-// intersection.
+// Does not count common endpoints as intersections. Treats any form of
+// colinearity as NOT an intersection. Note that this function may be subject to
+// floating point arithmetic error.
 bool is_intersecting(const LineSegment& e1, const LineSegment& e2);
 
 // Adjacent pairs of vertices represent edges of the polygon; the vertices on

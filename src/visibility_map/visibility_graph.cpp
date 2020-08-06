@@ -46,10 +46,12 @@ const geometry_2d::Polygon& Terrain::GetObstacle(
 
 // Current implementation simply searches all active edges for intersections. If
 // in need for speed, we can maintain a balanced search tree for active edges.
-bool is_visible(const geometry_2d::Point& source, const geometry_2d::Point& t,
+bool is_visible(const geometry_2d::Point& source,
+                const geometry_2d::Point& target,
                 const std::vector<geometry_2d::LineSegment>& active_edges) {
-  for (const auto& e : active_edges) {
-    if (geometry_2d::is_intersecting(geometry_2d::LineSegment{source, t}, e)) {
+  for (const auto& edge : active_edges) {
+    if (geometry_2d::is_intersecting(geometry_2d::LineSegment{source, target},
+                                     edge)) {
       return false;
     }
   }
@@ -76,6 +78,19 @@ std::set<geometry_2d::Point> get_visible_vertices(
     }
   }
 
+  if (verbose) {
+    std::cout << "sweep order:\n";
+    for (const auto& angle : ordered_points) {
+      std::cout << "points at angle " << std::to_string(angle.first)
+                << " rads: ";
+      for (const auto& point : angle.second) {
+        std::cout << geometry_2d::to_string(point) << " | ";
+      }
+      std::cout << '\n';
+    }
+    std::cout << '\n';
+  }
+
   // Initialize container for edges currrently crossed by our sweep line. The
   // order of the Points of each edge in this container matters (same direction
   // as ccw sweep).
@@ -95,6 +110,14 @@ std::set<geometry_2d::Point> get_visible_vertices(
         }
       }
     }
+  }
+
+  if (verbose) {
+    std::cout << "initial active edges (negative x-axis):\n";
+    for (const auto& edge : active_edges) {
+      std::cout << geometry_2d::to_string(edge) << '\n';
+    }
+    std::cout << "\n\nbegin sweep\n\n";
   }
 
   // Sweep.
@@ -135,7 +158,6 @@ std::set<geometry_2d::Point> get_visible_vertices(
       } else {
         active_edges.push_back(incident_edges.first);
       }
-
       iter = std::find(active_edges.begin(), active_edges.end(),
                        geometry_2d::reverse(incident_edges.second));
       if (iter != active_edges.end()) {
@@ -143,15 +165,39 @@ std::set<geometry_2d::Point> get_visible_vertices(
       } else {
         active_edges.push_back(incident_edges.second);
       }
+
+      if (verbose) {
+        std::cout << "active edges after processing "
+                  << geometry_2d::to_string(point) << ":\n";
+        for (const auto& edge : active_edges) {
+          std::cout << geometry_2d::to_string(edge) << '\n';
+        }
+        std::cout << '\n';
+      }
     }
+  }
+
+  if (verbose) {
+    std::cout << "visible vertices from " << geometry_2d::to_string(source)
+              << ":\n";
+    for (const auto& point : visible_vertices) {
+      std::cout << geometry_2d::to_string(point) << " | ";
+    }
+    std::cout << "\n\n";
   }
   return visible_vertices;
 }
 
-// graphlib::Graph2d get_visibility_graph(const Terrain& terrain, bool verbose)
-// {
-//   // stuff
-// }
+graphlib::Graph2d get_visibility_graph(const Terrain& terrain, bool verbose) {
+  graphlib::Graph2d graph(false);
+  for (const auto& point : terrain.AllVertices()) {
+    auto visible_vertices = get_visible_vertices(terrain, point);
+    for (const auto& visible_vertex : visible_vertices) {
+      graph.AddEdge(graphlib::Vertex2d(point.x, point.y),
+                    graphlib::Vertex2d(visible_vertex.x, visible_vertex.y));
+    }
+  }
+}
 
 }  // namespace visibility_map
 }  // namespace pathviz
