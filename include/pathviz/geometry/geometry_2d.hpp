@@ -1,7 +1,5 @@
 #pragma once
 
-#include <algorithm>
-#include <exception>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,10 +11,6 @@ namespace geometry_2d {
 
 struct Point {
   double x, y;
-};
-
-struct Edge {
-  Point from, to;
 };
 
 inline bool operator==(const Point& lhs, const Point& rhs) {
@@ -36,6 +30,15 @@ inline bool operator<(const Point& lhs, const Point& rhs) {
   }
 }
 
+inline std::string to_string(const Point& p) {
+  return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
+}
+
+struct Edge {
+  Point from, to;
+  Point Other(Point p);
+};
+
 inline bool operator==(const Edge& lhs, const Edge& rhs) {
   return lhs.to == rhs.to && lhs.from == rhs.from;
 }
@@ -44,30 +47,30 @@ inline bool operator!=(const Edge& lhs, const Edge& rhs) {
   return !operator==(lhs, rhs);
 }
 
-inline std::string to_string(const Point& p) {
-  return "(" + std::to_string(p.x) + ", " + std::to_string(p.y) + ")";
-}
-
 inline std::string to_string(const Edge& p) {
   return "[" + to_string(p.from) + "->" + to_string(p.to) + "]";
 }
 
-inline double distance_2d(const Point& p1, const Point& p2) {
-  return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
-}
+double distance(const Point& p1, const Point& p2);
+double length(const Edge& e);
 
-inline double distance_2d(const Edge& e) {
-  return std::sqrt(std::pow(e.from.x - e.to.x, 2) +
-                   std::pow(e.from.y - e.to.y, 2));
-}
+double angle_from_horizontal(const Point& source, const Point& target);
+double angle_from_horizontal(const Edge& e);
 
+double slope(const Edge& e);
+double y_intercept(const Edge& e);
+
+// Does not count common endpoints or any form of colinearity as an
+// intersection.
+bool is_intersecting(const Edge& e1, const Edge& e2);
+
+// Adjacent pairs of vertices represent edges of the polygon; the vertices on
+// each end of the vector close the polygon.
 struct Polygon {
   Polygon(std::vector<Point> polygon);
 
   std::pair<Edge, Edge> IncidentEdges(Point from) const;
 
-  // Adjacent vertices represent edges of the polygon; the vertices on the
-  // ends of the vector close the polygon.
   const std::vector<Point> polygon_;
 };
 
