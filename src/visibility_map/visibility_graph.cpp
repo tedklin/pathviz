@@ -191,12 +191,13 @@ std::set<geometry_2d::Point> get_visible_vertices(
 graphlib::Graph2d get_visibility_graph(const Terrain& terrain, bool verbose) {
   graphlib::Graph2d graph(false);
   for (const auto& point : terrain.AllVertices()) {
-    auto visible_vertices = get_visible_vertices(terrain, point);
+    auto visible_vertices = get_visible_vertices(terrain, point, verbose);
     for (const auto& visible_vertex : visible_vertices) {
       graph.AddEdge(graphlib::Vertex2d(point.x, point.y),
                     graphlib::Vertex2d(visible_vertex.x, visible_vertex.y));
     }
   }
+  return graph;
 }
 
 }  // namespace visibility_map

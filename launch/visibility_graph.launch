@@ -1,0 +1,8 @@
+<launch>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="my_frame_broadcaster" 
+    args="0 0 0 0 0 0 1 map my_frame" />
+  <node pkg="pathviz" type="visibility_graph_node" name="visibility_graph_node" 
+    output="screen" />
+  <node type="rviz" name="rviz" pkg="rviz" 
+    args="-d $(find pathviz)/rviz/enable_markers.rviz" />
+</launch>

@@ -17,7 +17,7 @@ TEST(VisibilityMap, TerrainTest) {
   EXPECT_EQ(vertices, terrain.AllVertices());
 }
 
-TEST(VisibilityMap, VisibleVerticesSweep) {
+TEST(VisibilityMap, VisibilitySweep) {
   // Example in Choset p.115, reflected about the y-axis (our sweep order is
   // slightly different).
   visibility_map::Terrain terrain;

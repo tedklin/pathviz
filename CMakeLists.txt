@@ -9,6 +9,10 @@ project(pathviz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  geometry_msgs
+  visualization_msgs
+  tf2
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,6 +112,10 @@ catkin_package(
     pathviz
   CATKIN_DEPENDS
     roscpp
+    geometry_msgs
+    visualization_msgs
+    tf2
+    tf2_ros
 #  DEPENDS system_lib
 )
 
