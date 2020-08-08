@@ -21,9 +21,6 @@ inline double distance_2d(const Vertex2d& v1, const Vertex2d& v2) {
   return std::sqrt(std::pow(v1.x_ - v2.x_, 2) + std::pow(v1.y_ - v2.y_, 2));
 }
 
-// The main difference between Graph2d and Graph is that Graph2d doesn't allow
-// direct user specification of edge weights. All edge weights are implicitly
-// calculated geometrically.
 class Graph2d : public Graph {
  public:
   using Input2dAL = std::map<Vertex2d, std::set<Vertex2d>>;
@@ -37,12 +34,14 @@ class Graph2d : public Graph {
   // Constructs a fully specified graph.
   Graph2d(const Input2dAL& al, bool is_directed);
 
+  void AddVertex(const Vertex2d& v);
+
   void AddEdge(const Vertex2d& source, const Vertex2d& dest);
 
   double EdgeWeight(const Vertex2d& source, const Vertex2d& dest);
 
-  // Delete inherited functions that allow direct user specification of edge
-  // weights.
+  // Delete inherited functions that insert non-Vertex2d types.
+  void AddVertex(const Vertex& v) = delete;
   void AddEdge(const Vertex& source, const Vertex& dest) = delete;
   void AddEdge(const Vertex& source, const Vertex& dest,
                double edge_weight) = delete;

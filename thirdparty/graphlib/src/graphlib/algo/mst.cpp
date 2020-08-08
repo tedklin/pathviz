@@ -22,10 +22,10 @@ std::string to_string(
   return s;
 }
 
-void prim_visit(Graph* graph, const Vertex* v) {
+void prim_visit(Graph* graph, std::shared_ptr<const Vertex> v) {
   v->state_ = Vertex::State::DISCOVERED;
   for (auto& adj : graph->GetAdjacentSet(*v)) {
-    const Vertex* v2 = adj.first;
+    std::shared_ptr<const Vertex> v2 = adj.first;
     double weight = adj.second;
     if (v2->state_ == Vertex::State::UNDISCOVERED) {
       g_crossing_edges.emplace(v, v2, weight);
@@ -47,7 +47,7 @@ std::vector<Edge> prim_mst(Graph* graph) {
 
   // Assuming the given graph is connected, this successfully adds at least one
   // crossing edge to the priority queue to kick off the algorithm.
-  prim_visit(graph, &(graph->GetVertexMap().cbegin()->first));
+  prim_visit(graph, graph->GetVertexMap().cbegin()->first);
 
   while (!g_crossing_edges.empty()) {
     Edge e = g_crossing_edges.top();
@@ -83,32 +83,34 @@ class VertexUnionFind {
   VertexUnionFind(Graph* graph) {
     // Initially, each vertex is its own subset / connected component.
     for (const auto& v : graph->GetVertexMap()) {
-      parents_[graph->GetInternalVertexPtr(v.first)] = nullptr;
-      sizes_[graph->GetInternalVertexPtr(v.first)] = 1;
+      parents_[v.first] = nullptr;
+      sizes_[v.first] = 1;
     }
   }
 
   // Returns the "name" of the subset / connected component containing a given
   // Vertex (i.e. the root of the given Vertex's tree.)
-  const Vertex* Find(const Vertex* v) const {
+  std::shared_ptr<const Vertex> Find(std::shared_ptr<const Vertex> v) const {
     while (parents_.at(v)) {
       v = parents_.at(v);
     }
     return v;
   }
 
-  bool IsConnected(const Vertex* v1, const Vertex* v2) const {
+  bool IsConnected(std::shared_ptr<const Vertex> v1,
+                   std::shared_ptr<const Vertex> v2) const {
     return Find(v1) == Find(v2);
   }
 
   // Merge the subsets containing the given Vertices.
-  void Union(const Vertex* v1, const Vertex* v2) {
+  void Union(std::shared_ptr<const Vertex> v1,
+             std::shared_ptr<const Vertex> v2) {
     if (IsConnected(v1, v2)) {
       return;
     }
 
     // Merge the smaller tree into the larger tree to maintain balance.
-    const Vertex *set1 = Find(v1), *set2 = Find(v2);
+    std::shared_ptr<const Vertex> set1 = Find(v1), set2 = Find(v2);
     if (sizes_.at(set1) < sizes_.at(set2)) {
       parents_.at(set1) = set2;
       sizes_.at(set2) += sizes_.at(set1);
@@ -119,8 +121,9 @@ class VertexUnionFind {
   }
 
  private:
-  std::map<const Vertex*, const Vertex*> parents_;
-  std::map<const Vertex*, int> sizes_;
+  std::map<std::shared_ptr<const Vertex>, std::shared_ptr<const Vertex>>
+      parents_;
+  std::map<std::shared_ptr<const Vertex>, int> sizes_;
 };
 
 std::vector<Edge> kruskal_mst(Graph* graph) {
@@ -135,12 +138,9 @@ std::vector<Edge> kruskal_mst(Graph* graph) {
   }
 
   // Add all edges in given graph to priority queue.
-  for (const auto& v : graph->GetVertexMap()) {
-    const Vertex* v1 = graph->GetInternalVertexPtr(v.first);
-    for (const auto& adj : v.second) {
-      const Vertex* v2 = adj.first;
-      double weight = adj.second;
-      g_crossing_edges.emplace(v1, v2, weight);
+  for (const auto& p : graph->GetVertexMap()) {
+    for (const auto& adj : p.second) {
+      g_crossing_edges.emplace(p.first, adj.first, adj.second);
     }
   }
 

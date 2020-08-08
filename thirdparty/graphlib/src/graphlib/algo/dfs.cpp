@@ -13,11 +13,12 @@ int g_time = 0;
 // Allow for early search termination.
 bool g_finished = false;
 
-void dfs_helper(Graph* graph, const Vertex* v1,
-                void (*process_vertex_early)(const Vertex* v),
-                void (*process_edge)(const Vertex* v1, const Vertex* v2,
+void dfs_helper(Graph* graph, std::shared_ptr<const Vertex> v1,
+                void (*process_vertex_early)(std::shared_ptr<const Vertex> v),
+                void (*process_edge)(std::shared_ptr<const Vertex> v1,
+                                     std::shared_ptr<const Vertex> v2,
                                      double weight),
-                void (*process_vertex_late)(const Vertex* v)) {
+                void (*process_vertex_late)(std::shared_ptr<const Vertex> v)) {
   if (g_finished) return;
 
   v1->state_ = Vertex::State::DISCOVERED;
@@ -27,7 +28,7 @@ void dfs_helper(Graph* graph, const Vertex* v1,
   }
 
   for (auto& adj : graph->GetAdjacentSet(*v1)) {
-    const Vertex* v2 = adj.first;
+    std::shared_ptr<const Vertex> v2 = adj.first;
     double weight = adj.second;
 
     if (v2->state_ == Vertex::State::UNDISCOVERED) {
@@ -62,11 +63,11 @@ void dfs_helper(Graph* graph, const Vertex* v1,
   v1->state_ = Vertex::State::PROCESSED;
 }
 
-void dfs(Graph* graph, const Vertex* search_root,
-         void (*process_vertex_early)(const Vertex* v),
-         void (*process_edge)(const Vertex* v1, const Vertex* v2,
-                              double weight),
-         void (*process_vertex_late)(const Vertex* v)) {
+void dfs(Graph* graph, std::shared_ptr<const Vertex> search_root,
+         void (*process_vertex_early)(std::shared_ptr<const Vertex> v),
+         void (*process_edge)(std::shared_ptr<const Vertex> v1,
+                              std::shared_ptr<const Vertex> v2, double weight),
+         void (*process_vertex_late)(std::shared_ptr<const Vertex> v)) {
   g_time = 0;
   g_finished = false;
 
@@ -74,17 +75,18 @@ void dfs(Graph* graph, const Vertex* search_root,
              process_vertex_late);
 }
 
-void dfs_graph(Graph* graph, void (*process_vertex_early)(const Vertex* v),
-               void (*process_edge)(const Vertex* v1, const Vertex* v2,
+void dfs_graph(Graph* graph,
+               void (*process_vertex_early)(std::shared_ptr<const Vertex> v),
+               void (*process_edge)(std::shared_ptr<const Vertex> v1,
+                                    std::shared_ptr<const Vertex> v2,
                                     double weight),
-               void (*process_vertex_late)(const Vertex* v)) {
+               void (*process_vertex_late)(std::shared_ptr<const Vertex> v)) {
   g_time = 0;
   g_finished = false;
 
   for (auto& p : graph->GetVertexMap()) {
-    const Vertex* v = graph->GetInternalVertexPtr(p.first);
-    if (v->state_ == Vertex::State::UNDISCOVERED) {
-      dfs_helper(graph, v, process_vertex_early, process_edge,
+    if (p.first->state_ == Vertex::State::UNDISCOVERED) {
+      dfs_helper(graph, p.first, process_vertex_early, process_edge,
                  process_vertex_late);
     }
   }
@@ -93,7 +95,8 @@ void dfs_graph(Graph* graph, void (*process_vertex_early)(const Vertex* v),
 // The four basic edge types as seen in Skiena.
 enum class EdgeType { TREE, BACK, FORWARD, CROSS, UNCLASSIFIED };
 
-EdgeType classify_edge(const Vertex* v1, const Vertex* v2) {
+EdgeType classify_edge(std::shared_ptr<const Vertex> v1,
+                       std::shared_ptr<const Vertex> v2) {
   // Note that undirected graphs can only have tree or back edges.
   if (v2->parent_ == v1) return EdgeType::TREE;
   if (v2->state_ == Vertex::State::DISCOVERED) return EdgeType::BACK;
@@ -119,10 +122,10 @@ bool is_cyclic(Graph* graph) {
   g_cyclic = false;
 
   for (auto& p : graph->GetVertexMap()) {
-    const Vertex* v = graph->GetInternalVertexPtr(p.first);
-    if (v->state_ == Vertex::State::UNDISCOVERED) {
-      dfs(graph, v, nullptr,
-          [](const Vertex* v1, const Vertex* v2, double weight) {
+    if (p.first->state_ == Vertex::State::UNDISCOVERED) {
+      dfs(graph, p.first, nullptr,
+          [](std::shared_ptr<const Vertex> v1, std::shared_ptr<const Vertex> v2,
+             double weight) {
             if (v2->state_ == Vertex::State::DISCOVERED && v1->parent_ != v2) {
               // Found back edge, forming a cycle.
               g_cyclic = true;
@@ -136,9 +139,9 @@ bool is_cyclic(Graph* graph) {
   return g_cyclic;
 }
 
-std::stack<const Vertex*> g_topo_stack;
+std::stack<std::shared_ptr<const Vertex>> g_topo_stack;
 
-std::stack<const Vertex*>& topological_sort(Graph* graph) {
+std::stack<std::shared_ptr<const Vertex>>& topological_sort(Graph* graph) {
   if (!graph->IsDirected()) {
     std::cerr << "Warning: tried to perform topological sort on a non-DAG!\n\n";
   }
@@ -148,35 +151,39 @@ std::stack<const Vertex*>& topological_sort(Graph* graph) {
   }
 
   dfs_graph(graph, nullptr,
-            [](const Vertex* v1, const Vertex* v2, double weight) {
+            [](std::shared_ptr<const Vertex> v1,
+               std::shared_ptr<const Vertex> v2, double weight) {
               if (classify_edge(v1, v2) == EdgeType::BACK) {
                 std::cerr << "Warning: tried to perform topological sort on a "
                              "non-DAG!\n\n";
               }
             },
-            [](const Vertex* v) { g_topo_stack.push(v); });
+            [](std::shared_ptr<const Vertex> v) { g_topo_stack.push(v); });
 
   return g_topo_stack;
 }
 
 std::stack<Vertex> g_kosaraju_stack;
-std::set<const Vertex*> g_strong_component;
+std::set<std::shared_ptr<const Vertex>> g_strong_component;
 
 // Kosaraju's algorithm.
-std::vector<std::set<const Vertex*>> strong_components(Graph* graph) {
-  std::vector<std::set<const Vertex*>> components;
+std::vector<std::set<std::shared_ptr<const Vertex>>> strong_components(
+    Graph* graph) {
+  std::vector<std::set<std::shared_ptr<const Vertex>>> components;
 
   std::shared_ptr<Graph> reverse = graph->GetReverseGraph();
   dfs_graph(reverse.get(), nullptr, nullptr,
-            [](const Vertex* v) { g_kosaraju_stack.push(*v); });
+            [](std::shared_ptr<const Vertex> v) { g_kosaraju_stack.push(*v); });
 
   while (!g_kosaraju_stack.empty()) {
-    const Vertex* v = graph->GetInternalVertexPtr(g_kosaraju_stack.top());
+    std::shared_ptr<const Vertex> v =
+        graph->GetVertexPtr(g_kosaraju_stack.top());
     g_kosaraju_stack.pop();
     if (v->state_ == Vertex::State::UNDISCOVERED) {
-      dfs_helper(graph, v,
-                 [](const Vertex* v) { g_strong_component.insert(v); }, nullptr,
-                 nullptr);
+      dfs_helper(
+          graph, v,
+          [](std::shared_ptr<const Vertex> v) { g_strong_component.insert(v); },
+          nullptr, nullptr);
     }
     if (!g_strong_component.empty()) {
       components.push_back(g_strong_component);
@@ -187,24 +194,25 @@ std::vector<std::set<const Vertex*>> strong_components(Graph* graph) {
   return components;
 }
 
-std::set<const Vertex*> g_artic_vertices;
-std::map<const Vertex*, const Vertex*> g_reachable_ancestors;
-std::map<const Vertex*, int> g_tree_out_degree;
+std::set<std::shared_ptr<const Vertex>> g_artic_vertices;
+std::map<std::shared_ptr<const Vertex>, std::shared_ptr<const Vertex>>
+    g_reachable_ancestors;
+std::map<std::shared_ptr<const Vertex>, int> g_tree_out_degree;
 
 // UNTESTED!
-std::set<const Vertex*>& articulation_vertices(Graph* graph) {
+std::set<std::shared_ptr<const Vertex>>& articulation_vertices(Graph* graph) {
   g_artic_vertices.clear();
   g_reachable_ancestors.clear();
   g_tree_out_degree.clear();
   for (const auto& p : graph->GetVertexMap()) {
-    g_reachable_ancestors[graph->GetInternalVertexPtr(p.first)] =
-        graph->GetInternalVertexPtr(p.first);
-    g_tree_out_degree[graph->GetInternalVertexPtr(p.first)] = 0;
+    g_reachable_ancestors[p.first] = p.first;
+    g_tree_out_degree[p.first] = 0;
   }
 
   dfs_graph(
       graph, nullptr,
-      [](const Vertex* v1, const Vertex* v2, double weight) {
+      [](std::shared_ptr<const Vertex> v1, std::shared_ptr<const Vertex> v2,
+         double weight) {
         if (classify_edge(v1, v2) == EdgeType::TREE) {
           ++(g_tree_out_degree.at(v1));
         } else if (classify_edge(v1, v2) == EdgeType::BACK &&
@@ -214,7 +222,7 @@ std::set<const Vertex*>& articulation_vertices(Graph* graph) {
           }
         }
       },
-      [](const Vertex* v) {
+      [](std::shared_ptr<const Vertex> v) {
         // Edge case for search tree root vertex
         if (!(v->parent_)) {
           if (g_tree_out_degree.at(v) > 1) {
