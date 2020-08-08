@@ -99,9 +99,9 @@ std::set<geometry_2d::Point> get_visible_vertices(
     for (const auto& edge : polygon.AllEdges()) {
       // If intersecting negative x-axis, then add to initial active edges.
       if (!geometry_2d::is_horizontal(edge) &&
-          geometry_2d::x_intercept(edge) < 0 &&
-          std::max(edge.from.y, edge.to.y) > 0 &&
-          std::min(edge.from.y, edge.to.y) < 0) {
+          geometry_2d::x_intercept(edge) < source.x &&
+          std::max(edge.from.y, edge.to.y) > source.y &&
+          std::min(edge.from.y, edge.to.y) < source.y) {
         // Ensure the edge we add is pointing downwards (ccw).
         if (edge.from.y > edge.to.y) {
           active_edges.push_back(edge);

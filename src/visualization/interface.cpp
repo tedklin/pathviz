@@ -49,7 +49,7 @@ std::vector<visualization_msgs::Marker> to_marker_list(
     marker.id = i++;
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 0.05;
+    marker.scale.x = 0.1;
     marker.color.b = 1.0f;
     std::vector<geometry_msgs::Point> point_list;
 

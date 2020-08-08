@@ -39,9 +39,11 @@ int main(int argc, char** argv) {
 
   for (const auto& marker : terrain_marker_list) {
     marker_pub.publish(marker);
-    std::cout << marker.ns << ' ' << marker.id << '\n';
   }
   marker_pub.publish(vis_graph_marker);
+
+  visibility_map::get_visible_vertices(terrain, geometry_2d::Point{-6, -1.8},
+                                       true);
 
   ros::spin();
   return 0;
