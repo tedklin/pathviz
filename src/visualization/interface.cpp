@@ -36,6 +36,36 @@ void set_marker_defaults(visualization_msgs::Marker& marker) {
   marker.pose.orientation.w = 1.0;
 }
 
+std::vector<visualization_msgs::Marker> to_marker_list(
+    const visibility_map::Terrain& terrain) {
+  std::vector<visualization_msgs::Marker> marker_list;
+
+  int i = 1;
+  for (const auto& polygon : terrain.AllObstacles()) {
+    visualization_msgs::Marker marker;
+    set_marker_defaults(marker);
+
+    marker.ns = "terrain";
+    marker.id = i++;
+    marker.type = visualization_msgs::Marker::LINE_STRIP;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.05;
+    marker.color.b = 1.0f;
+    std::vector<geometry_msgs::Point> point_list;
+
+    for (const auto& point : polygon.polygon_) {
+      point_list.push_back(to_geometry_msg(point));
+    }
+    point_list.push_back(
+        to_geometry_msg(polygon.polygon_[0]));  // close polygon
+
+    marker.points = point_list;
+    marker_list.push_back(marker);
+  }
+
+  return marker_list;
+}
+
 visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
   visualization_msgs::Marker marker;
   set_marker_defaults(marker);
@@ -44,7 +74,7 @@ visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
   marker.id = 0;
   marker.type = visualization_msgs::Marker::LINE_LIST;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = 0.1;
+  marker.scale.x = 0.05;
   marker.color.g = 1.0f;
   std::vector<geometry_msgs::Point> point_list;
 
