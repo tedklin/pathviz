@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
       {{0, 0}, {0.5, 3}, {-0.7, 4.8}, {-4, 3.7}, {-3.3, 1.5}, {-1.5, 2.5}});
   geometry_2d::Polygon p2(
       {{-2.3, -0.7}, {-5.3, 0.8}, {-6, -1.8}, {-3.2, -2.3}});
-  geometry_2d::Polygon p3({{2.5, 0}, {5, -3}, {0, -2.7}});
+  geometry_2d::Polygon p3({{2.7, 0}, {0, -2.7}, {5, -3}});
 
   visibility_map::Terrain terrain({p1, p2, p3});
   auto terrain_marker_list = visualization::to_marker_list(terrain);
@@ -41,9 +41,6 @@ int main(int argc, char** argv) {
     marker_pub.publish(marker);
   }
   marker_pub.publish(vis_graph_marker);
-
-  visibility_map::get_visible_vertices(terrain, geometry_2d::Point{-6, -1.8},
-                                       true);
 
   ros::spin();
   return 0;

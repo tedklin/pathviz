@@ -16,7 +16,7 @@ Terrain::Terrain(std::vector<geometry_2d::Polygon> obstacles) {
 }
 
 void Terrain::AddObstacle(const geometry_2d::Polygon& obstacle) {
-  for (const geometry_2d::Point& p : obstacle.polygon_) {
+  for (const geometry_2d::Point& p : obstacle.GetPolygon()) {
     obstacle_index_.insert(std::make_pair(p, obstacles_.size()));
   }
   obstacles_.push_back(obstacle);
@@ -29,26 +29,73 @@ const std::vector<geometry_2d::Polygon>& Terrain::AllObstacles() const {
 std::set<geometry_2d::Point> Terrain::AllVertices() const {
   std::set<geometry_2d::Point> vertices;
   for (const auto& obstacle : obstacles_) {
-    vertices.insert(obstacle.polygon_.cbegin(), obstacle.polygon_.cend());
+    vertices.insert(obstacle.GetPolygon().cbegin(),
+                    obstacle.GetPolygon().cend());
   }
   return vertices;
 }
 
-const geometry_2d::Polygon& Terrain::GetObstacle(
-    const geometry_2d::Point& vertex) const {
+int Terrain::GetObstacleIndex(const geometry_2d::Point& vertex) const {
   if (obstacle_index_.find(vertex) == obstacle_index_.end()) {
     throw std::runtime_error(
         "visibility_graph::Terrain error: tried to access a vertex that "
         "doesn't exist");
   }
-  return obstacles_.at(obstacle_index_.at(vertex));
+  return obstacle_index_.at(vertex);
 }
 
-// Current implementation simply searches all active edges for intersections. If
-// in need for speed, we can maintain a balanced search tree for active edges.
-bool is_visible(const geometry_2d::Point& source,
+const geometry_2d::Polygon& Terrain::GetObstacle(
+    const geometry_2d::Point& vertex) const {
+  return obstacles_.at(GetObstacleIndex(vertex));
+}
+
+bool is_visible(const Terrain& terrain, const geometry_2d::Point& source,
                 const geometry_2d::Point& target,
                 const std::vector<geometry_2d::LineSegment>& active_edges) {
+  // Test if target is part of the same polygon as the source. Try-catch is
+  // needed because the input points are not necessarily part of any polygon.
+  bool same_polygon = true;
+  try {
+    same_polygon =
+        terrain.GetObstacleIndex(source) == terrain.GetObstacleIndex(target);
+  } catch (std::runtime_error e) {
+    same_polygon = false;
+  }
+
+  // If the target is part of the same polygon as the source, check if the line
+  // from source to target goes through the inside of the polygon. This is
+  // accomplished by an angle bounds check using the incident edges of source.
+  if (same_polygon) {
+    auto incident_edges = terrain.GetObstacle(source).IncidentEdges(source);
+
+    // "Left" and "right" from the transformed perspective where the y-axis is
+    // the bisection of the interior angle formed by the incident edges. This
+    // helps us determine the edge case where the actual angle bound crosses the
+    // negative x-axis (where our angle calculation jumps from -pi to pi).
+    double left_angle =
+        geometry_2d::angle_from_horizontal(incident_edges.first);
+    double right_angle =
+        geometry_2d::angle_from_horizontal(incident_edges.second);
+    double target_angle = geometry_2d::angle_from_horizontal(source, target);
+
+    if (left_angle < right_angle) {
+      // case where angle bound crosses negative x-axis
+      if ((-geometry_2d::pi < target_angle && target_angle < left_angle) ||
+          (right_angle < target_angle && target_angle <= geometry_2d::pi)) {
+        return false;
+      }
+    } else {
+      // regular case
+      if (right_angle < target_angle && target_angle < left_angle) {
+        return false;
+      }
+    }
+  }
+
+  // Check if the line from source to target intersects any active edges.
+  // Current implementation simply searches all active edges for intersections.
+  // If in need for speed, we can maintain a balanced search tree for active
+  // edges and only check the active edge closest to source (de Berg et al).
   for (const auto& edge : active_edges) {
     if (geometry_2d::is_intersecting(geometry_2d::LineSegment{source, target},
                                      edge)) {
@@ -59,7 +106,7 @@ bool is_visible(const geometry_2d::Point& source,
 }
 
 // Lee's rotational plane sweep algorithm.
-// The implementation here sweeps counter-clockwise starting from the negative
+// The implementation here sweeps counterclockwise starting from the negative
 // x-axis w.r.t. the source Point (natural ordering with atan2).
 std::set<geometry_2d::Point> get_visible_vertices(
     const Terrain& terrain, const geometry_2d::Point& source, bool verbose) {
@@ -136,7 +183,7 @@ std::set<geometry_2d::Point> get_visible_vertices(
                            // usual visibility check
     for (const auto& point : colinear_points) {
       // Add visible vertices.
-      if (!blocked && is_visible(source, point, active_edges)) {
+      if (!blocked && is_visible(terrain, source, point, active_edges)) {
         visible_vertices.insert(point);
       } else {
         blocked = true;

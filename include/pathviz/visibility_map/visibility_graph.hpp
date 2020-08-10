@@ -22,7 +22,8 @@ class Terrain {
   const std::vector<geometry_2d::Polygon>& AllObstacles() const;
   std::set<geometry_2d::Point> AllVertices() const;
 
-  // Get obstacle Polygon associated with given vertex.
+  int GetObstacleIndex(const geometry_2d::Point& vertex) const;
+
   const geometry_2d::Polygon& GetObstacle(
       const geometry_2d::Point& vertex) const;
 

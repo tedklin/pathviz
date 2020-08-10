@@ -50,14 +50,15 @@ std::vector<visualization_msgs::Marker> to_marker_list(
     marker.type = visualization_msgs::Marker::LINE_STRIP;
     marker.action = visualization_msgs::Marker::ADD;
     marker.scale.x = 0.1;
+    marker.pose.position.z = 0.02;
     marker.color.b = 1.0f;
     std::vector<geometry_msgs::Point> point_list;
 
-    for (const auto& point : polygon.polygon_) {
+    for (const auto& point : polygon.GetPolygon()) {
       point_list.push_back(to_geometry_msg(point));
     }
     point_list.push_back(
-        to_geometry_msg(polygon.polygon_[0]));  // close polygon
+        to_geometry_msg(polygon.GetPolygon()[0]));  // close polygon
 
     marker.points = point_list;
     marker_list.push_back(marker);

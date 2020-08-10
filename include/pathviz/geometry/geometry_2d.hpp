@@ -57,8 +57,13 @@ LineSegment reverse(const LineSegment& e);
 double distance(const Point& p1, const Point& p2);
 double length(const LineSegment& e);
 
-// Angle (-pi, pi] from positive horizontal axis w.r.t. a source Point.
+constexpr double pi = 3.14159265358979323846;
+
+// Angle (-pi, pi] from positive horizontal axis
+// w.r.t. an input source Point.
 double angle_from_horizontal(const Point& source, const Point& target);
+// w.r.t. an input LineSegment's "from" Point.
+double angle_from_horizontal(const LineSegment& e);
 
 bool is_horizontal(const LineSegment& e);
 bool is_vertical(const LineSegment& e);
@@ -98,10 +103,10 @@ class Polygon {
   // Incident edges pointing outwards from the given point.
   //
   // Maintains counterclockwise polygon ordering (if we rotate about the input
-  // point such that a ray drawn between the incident edges towards the inside
-  // of the polygon aligns with the positive y-axis, then the incident edge to
-  // the left of the y-axis would be the first in the pair returned by this
-  // function).
+  // point such that a ray drawn between the incident edges from the input point
+  // towards the inside of the polygon aligns with the positive y-axis, then the
+  // incident edge to the left of the y-axis would be the first in the pair
+  // returned by this function).
   std::pair<LineSegment, LineSegment> IncidentEdges(Point from) const;
 
  private:

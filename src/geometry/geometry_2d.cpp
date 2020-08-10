@@ -32,6 +32,10 @@ double angle_from_horizontal(const Point& source, const Point& target) {
   return std::atan2(dy, dx);
 }
 
+double angle_from_horizontal(const LineSegment& e) {
+  return angle_from_horizontal(e.from, e.to);
+}
+
 bool is_horizontal(const LineSegment& e) { return e.from.y == e.to.y; }
 
 bool is_vertical(const LineSegment& e) { return e.from.x == e.to.x; }

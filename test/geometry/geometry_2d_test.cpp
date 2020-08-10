@@ -31,6 +31,25 @@ TEST(Geometry2d, NumericalTest) {
   EXPECT_DOUBLE_EQ(5, geometry_2d::distance(Point{3, 0}, Point{0, 4}));
   EXPECT_DOUBLE_EQ(5, geometry_2d::length(LineSegment{{3, 0}, {0, 4}}));
 
+  EXPECT_DOUBLE_EQ(-3 * geometry_2d::pi / 4, geometry_2d::angle_from_horizontal(
+                                                 Point{0, 0}, Point{-3, -3}));
+  EXPECT_DOUBLE_EQ(-geometry_2d::pi / 4, geometry_2d::angle_from_horizontal(
+                                             Point{0, 0}, Point{3, -3}));
+  EXPECT_DOUBLE_EQ(geometry_2d::pi / 4, geometry_2d::angle_from_horizontal(
+                                            Point{0, 0}, Point{3, 3}));
+  EXPECT_DOUBLE_EQ(3 * geometry_2d::pi / 4, geometry_2d::angle_from_horizontal(
+                                                Point{0, 0}, Point{-3, 3}));
+
+  EXPECT_DOUBLE_EQ(
+      -3 * geometry_2d::pi / 4,
+      geometry_2d::angle_from_horizontal(LineSegment{{0, 0}, {-3, -3}}));
+  EXPECT_DOUBLE_EQ(-geometry_2d::pi / 4, geometry_2d::angle_from_horizontal(
+                                             LineSegment{{0, 0}, {3, -3}}));
+  EXPECT_DOUBLE_EQ(geometry_2d::pi / 4, geometry_2d::angle_from_horizontal(
+                                            LineSegment{{0, 0}, {3, 3}}));
+  EXPECT_DOUBLE_EQ(3 * geometry_2d::pi / 4, geometry_2d::angle_from_horizontal(
+                                                LineSegment{{0, 0}, {-3, 3}}));
+
   EXPECT_DOUBLE_EQ((-4.0 / 3.0),
                    geometry_2d::slope(LineSegment{{3, 0}, {0, 4}}));
   EXPECT_DOUBLE_EQ(geometry_2d::slope(LineSegment{{3, 0}, {0, 4}}),
