@@ -3,12 +3,13 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <limits>
 #include <utility>
 
 namespace pathviz {
 namespace geometry_2d {
 
-Point LineSegment::Other(Point p) {
+const Point& LineSegment::Other(const Point& p) {
   if (p == from) {
     return to;
   } else if (p == to) {
@@ -93,20 +94,55 @@ bool is_intersecting(const LineSegment& e1, const LineSegment& e2) {
   }
 }
 
-Polygon::Polygon(std::vector<Point> polygon) : polygon_(polygon) {
+void MinBoundingBox::AddPoint(const Point& p) {
+  if (p.x < left_bound) {
+    left_bound = p.x;
+  }
+  if (p.x > right_bound) {
+    right_bound = p.x;
+  }
+  if (p.y < bottom_bound) {
+    bottom_bound = p.y;
+  }
+  if (p.y > top_bound) {
+    top_bound = p.y;
+  }
+}
+
+void MinBoundingBox::AddBoundingBox(const MinBoundingBox& other) {
+  if (other.left_bound < left_bound) {
+    left_bound = other.left_bound;
+  }
+  if (other.right_bound > right_bound) {
+    right_bound = other.right_bound;
+  }
+  if (other.bottom_bound < bottom_bound) {
+    bottom_bound = other.bottom_bound;
+  }
+  if (other.top_bound > top_bound) {
+    top_bound = other.top_bound;
+  }
+}
+
+// The current implementation assumes that the order of points inputted is
+// counter-clockwise.
+// TODO: automatically reverse order of points if detected clockwise.
+Polygon::Polygon(std::vector<Point> polygon) {
+  for (const Point& p : polygon) {
+    polygon_.push_back(p);
+    bounding_box_.AddPoint(p);
+  }
+
+  for (auto iter = polygon_.cbegin() + 1; iter != polygon_.cend(); ++iter) {
+    all_edges_.push_back(LineSegment{*(iter - 1), *iter});
+  }
+  all_edges_.push_back(
+      LineSegment{polygon_.front(), polygon_.back()});  // closing edge
+
   if (polygon_.size() < 3) {
     throw std::runtime_error(
         "geometry_2d::Polygon error: polygon must have at least 3 points");
   }
-}
-
-std::vector<LineSegment> Polygon::AllEdges() const {
-  std::vector<LineSegment> edges;
-  for (auto iter = polygon_.cbegin() + 1; iter != polygon_.cend(); ++iter) {
-    edges.push_back(LineSegment{*(iter - 1), *iter});
-  }
-  edges.push_back(LineSegment{polygon_.front(), polygon_.back()});
-  return edges;
 }
 
 std::pair<LineSegment, LineSegment> Polygon::IncidentEdges(Point from) const {
@@ -119,11 +155,11 @@ std::pair<LineSegment, LineSegment> Polygon::IncidentEdges(Point from) const {
 
   // All three cases here are mutually exclusive because a polygon has at
   // least 3 points.
-  if (from == polygon_.front()) {
+  if (iter == polygon_.cbegin()) {
     LineSegment e1{from, *(polygon_.cend() - 1)};
     LineSegment e2{from, *(iter + 1)};
     return std::pair<LineSegment, LineSegment>(e1, e2);
-  } else if (from == polygon_.back()) {
+  } else if (iter == polygon_.cend() - 1) {
     LineSegment e1{from, *(iter - 1)};
     LineSegment e2{from, *(polygon_.cbegin())};
     return std::pair<LineSegment, LineSegment>(e1, e2);

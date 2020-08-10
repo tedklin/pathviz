@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,7 +37,7 @@ inline std::string to_string(const Point& p) {
 
 struct LineSegment {
   Point from, to;
-  Point Other(Point p);
+  const Point& Other(const Point& p);
 };
 
 inline bool operator==(const LineSegment& lhs, const LineSegment& rhs) {
@@ -71,17 +72,43 @@ double x_intercept(const LineSegment& e);
 // floating point arithmetic error.
 bool is_intersecting(const LineSegment& e1, const LineSegment& e2);
 
+struct MinBoundingBox {
+  double left_bound = std::numeric_limits<double>::infinity(),
+         right_bound = -std::numeric_limits<double>::infinity(),
+         bottom_bound = std::numeric_limits<double>::infinity(),
+         top_bound = -std::numeric_limits<double>::infinity();
+
+  void AddPoint(const Point& p);
+  void AddBoundingBox(const MinBoundingBox& other);
+};
+
 // Adjacent pairs of vertices represent edges of the polygon; the vertices on
 // each end of the vector close the polygon.
-struct Polygon {
+//
+// The current implementation assumes that the order of points inputted is
+// counterclockwise.
+class Polygon {
+ public:
   Polygon(std::vector<Point> polygon);
 
-  std::vector<LineSegment> AllEdges() const;
+  const std::vector<Point>& GetPolygon() const { return polygon_; }
+  const std::vector<LineSegment>& AllEdges() const { return all_edges_; };
+  const MinBoundingBox& BoundingBox() const { return bounding_box_; };
 
   // Incident edges pointing outwards from the given point.
+  //
+  // Maintains counterclockwise polygon ordering (if we rotate about the input
+  // point such that a ray drawn between the incident edges towards the inside
+  // of the polygon aligns with the positive y-axis, then the incident edge to
+  // the left of the y-axis would be the first in the pair returned by this
+  // function).
   std::pair<LineSegment, LineSegment> IncidentEdges(Point from) const;
 
-  const std::vector<Point> polygon_;
+ private:
+  std::vector<Point> polygon_;
+
+  std::vector<LineSegment> all_edges_;
+  MinBoundingBox bounding_box_;
 };
 
 // TODO: overload equality operator for Polygon, taking into account possible

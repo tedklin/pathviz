@@ -5,6 +5,7 @@
 using namespace pathviz;
 
 using geometry_2d::LineSegment;
+using geometry_2d::MinBoundingBox;
 using geometry_2d::Point;
 using geometry_2d::Polygon;
 
@@ -79,6 +80,41 @@ TEST(Geometry2d, IntersectionTest) {
                                    LineSegment{{0, 2}, {2, 0}}));
 }
 
+TEST(Geometry2d, BoundingBoxTest) {
+  MinBoundingBox box;
+  box.AddPoint({1, 1});
+  EXPECT_EQ(1, box.left_bound);
+  EXPECT_EQ(1, box.right_bound);
+  EXPECT_EQ(1, box.bottom_bound);
+  EXPECT_EQ(1, box.top_bound);
+
+  box.AddPoint({3, 1});
+  EXPECT_EQ(1, box.left_bound);
+  EXPECT_EQ(3, box.right_bound);
+  EXPECT_EQ(1, box.bottom_bound);
+  EXPECT_EQ(1, box.top_bound);
+
+  box.AddPoint({-3, 2});
+  EXPECT_EQ(-3, box.left_bound);
+  EXPECT_EQ(3, box.right_bound);
+  EXPECT_EQ(1, box.bottom_bound);
+  EXPECT_EQ(2, box.top_bound);
+
+  MinBoundingBox box2;
+  box2.AddPoint({0, 0});
+  box2.AddPoint({-5, -5});
+  EXPECT_EQ(-5, box2.left_bound);
+  EXPECT_EQ(0, box2.right_bound);
+  EXPECT_EQ(-5, box2.bottom_bound);
+  EXPECT_EQ(0, box2.top_bound);
+
+  box.AddBoundingBox(box2);
+  EXPECT_EQ(-5, box.left_bound);
+  EXPECT_EQ(3, box.right_bound);
+  EXPECT_EQ(-5, box.bottom_bound);
+  EXPECT_EQ(2, box.top_bound);
+}
+
 TEST(Geometry2d, PolygonTest) {
   EXPECT_THROW(Polygon line({{0, 0}, {3, 0}}), std::runtime_error);
 
@@ -93,38 +129,28 @@ TEST(Geometry2d, PolygonTest) {
                std::runtime_error);
 
   auto incident_edges = triangle.IncidentEdges({0, 0});
-  EXPECT_TRUE((incident_edges.first == LineSegment{{0, 0}, {3, 0}} ||
-               incident_edges.first == LineSegment{{0, 0}, {0, 4}}));
-  EXPECT_TRUE((incident_edges.second == LineSegment{{0, 0}, {3, 0}} ||
-               incident_edges.second == LineSegment{{0, 0}, {0, 4}}));
+  EXPECT_TRUE((incident_edges.first == LineSegment{{0, 0}, {0, 4}}));
+  EXPECT_TRUE((incident_edges.second == LineSegment{{0, 0}, {3, 0}}));
   EXPECT_FALSE(incident_edges.first == incident_edges.second);
 
   incident_edges = triangle.IncidentEdges({3, 0});
-  EXPECT_TRUE((incident_edges.first == LineSegment{{3, 0}, {0, 0}} ||
-               incident_edges.first == LineSegment{{3, 0}, {0, 4}}));
-  EXPECT_TRUE((incident_edges.second == LineSegment{{3, 0}, {0, 0}} ||
-               incident_edges.second == LineSegment{{3, 0}, {0, 4}}));
+  EXPECT_TRUE((incident_edges.first == LineSegment{{3, 0}, {0, 0}}));
+  EXPECT_TRUE((incident_edges.second == LineSegment{{3, 0}, {0, 4}}));
   EXPECT_FALSE(incident_edges.first == incident_edges.second);
 
   incident_edges = triangle.IncidentEdges({0, 4});
-  EXPECT_TRUE((incident_edges.first == LineSegment{{0, 4}, {0, 0}} ||
-               incident_edges.first == LineSegment{{0, 4}, {3, 0}}));
-  EXPECT_TRUE((incident_edges.second == LineSegment{{0, 4}, {0, 0}} ||
-               incident_edges.second == LineSegment{{0, 4}, {3, 0}}));
+  EXPECT_TRUE((incident_edges.first == LineSegment{{0, 4}, {3, 0}}));
+  EXPECT_TRUE((incident_edges.second == LineSegment{{0, 4}, {0, 0}}));
   EXPECT_FALSE(incident_edges.first == incident_edges.second);
 
   geometry_2d::Polygon square({{-1, -1}, {1, -1}, {1, 1}, {-1, 1}});
   incident_edges = square.IncidentEdges({-1, -1});
-  EXPECT_TRUE((incident_edges.first == LineSegment{{-1, -1}, {1, -1}} ||
-               incident_edges.first == LineSegment{{-1, -1}, {-1, 1}}));
-  EXPECT_TRUE((incident_edges.second == LineSegment{{-1, -1}, {1, -1}} ||
-               incident_edges.second == LineSegment{{-1, -1}, {-1, 1}}));
+  EXPECT_TRUE((incident_edges.first == LineSegment{{-1, -1}, {-1, 1}}));
+  EXPECT_TRUE((incident_edges.second == LineSegment{{-1, -1}, {1, -1}}));
   EXPECT_FALSE(incident_edges.first == incident_edges.second);
 
   incident_edges = square.IncidentEdges({1, 1});
-  EXPECT_TRUE((incident_edges.first == LineSegment{{1, 1}, {1, -1}} ||
-               incident_edges.first == LineSegment{{1, 1}, {-1, 1}}));
-  EXPECT_TRUE((incident_edges.second == LineSegment{{1, 1}, {1, -1}} ||
-               incident_edges.second == LineSegment{{1, 1}, {-1, 1}}));
+  EXPECT_TRUE((incident_edges.first == LineSegment{{1, 1}, {1, -1}}));
+  EXPECT_TRUE((incident_edges.second == LineSegment{{1, 1}, {-1, 1}}));
   EXPECT_FALSE(incident_edges.first == incident_edges.second);
 }
