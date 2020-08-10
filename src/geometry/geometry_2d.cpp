@@ -70,6 +70,7 @@ double x_intercept(const LineSegment& e) {
   return -y_intercept(e) / slope(e);
 }
 
+// TODO: find ways to make this more numerically robust!
 bool is_intersecting(const LineSegment& e1, const LineSegment& e2) {
   if (is_vertical(e1) && is_vertical(e2)) {
     return false;  // colinear

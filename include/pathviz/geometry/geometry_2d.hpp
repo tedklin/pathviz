@@ -74,7 +74,8 @@ double x_intercept(const LineSegment& e);
 
 // Does not count common endpoints as intersections. Treats any form of
 // colinearity as NOT an intersection. Note that this function may be subject to
-// floating point arithmetic error.
+// floating point arithmetic error, especially near endpoints.
+// TODO: find ways to make this more numerically robust!
 bool is_intersecting(const LineSegment& e1, const LineSegment& e2);
 
 struct MinBoundingBox {
