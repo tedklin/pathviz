@@ -14,5 +14,9 @@ add_library(graphlib ${SOURCE_LIST})
 # We need this directory, and users of our library will need it too
 target_include_directories(graphlib PUBLIC ${PROJECT_SOURCE_DIR}/src)
 
-# All users of this library will need at least C++11
-target_compile_features(graphlib PUBLIC cxx_std_11)
+# All users of this library will need at least C++14
+target_compile_features(graphlib PUBLIC cxx_std_14)
+set_target_properties(graphlib PROPERTIES CXX_EXTENSIONS OFF)
+
+# Compiler flags
+target_compile_options(graphlib PRIVATE "-fPIC" "-Wall")

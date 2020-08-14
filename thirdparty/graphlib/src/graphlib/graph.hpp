@@ -22,28 +22,28 @@ The "Vertex" struct represents a vertex with a string name. It encodes commonly
 used values associated with graph algorithms, such as search state. Inheritance
 can be leveraged to create Vertex types that store more information.
 
-The "Graph" class defines two typenames, "VertexMap" and "AdjacentSet", for
-internal use as the underlying data structure.
+The "Graph" class defines three typenames, "VertexSet", "AdjacentSet", and
+"AdjacencyMap", for internal use as the underlying data structure.
 
-The "VertexMap" typename (map<shared_ptr<Vertex>, AdjacentSet>), represents the
-set of all Vertex instances contained in a Graph. It maps each Vertex instance
-of a graph to a corresponding "AdjacentSet" type.
+The "VertexSet" typename (set<unique_ptr<Vertex>>) represents the only set of
+Vertex instances allocated and maintained by the Graph. All uses of a Vertex in
+the Graph must use a pointer to the Vertices contained in the VertexSet data
+member.
 
-The "AdjacentSet" typename (map<shared_ptr<const Vertex>, double>) represents
-the set of neighboring vertices to an arbitrary "source" vertex (the "source"
-vertex is defined by the VertexMap key to which an AdjacentSet is bound). The
-AdjacentSet type maps each neighboring vertex with a floating point "edge
-weight". Altogether, a VertexMap key, AdjacentSet key, and floating point edge
-weight represent the concept of one edge in a graph.
+The "AdjacencyMap" typename (map<const Vertex*, AdjacentSet>), maps each
+Vertex instance of a graph to a corresponding "AdjacentSet" type.
 
-Note that the keyset of the Graph class member of type VertexMap is the only
-copy of Vertex instances stored in a Graph. When processing a Graph, one should
-generally use pointers to the keys of the VertexMap (see Graph::GetVertexPtr
-member).
+The "AdjacentSet" typename (set<pair<const Vertex*, double>>) represents
+the set of neighboring vertices from an arbitrary "source" vertex (the "source"
+vertex is defined by the AdjacencyMap key to which an AdjacentSet is bound).
+Each neighboring vertex is paired with a floating point edge weight.
+
+Altogether, an AdjacencyMap key and a pair contained by the AdjacentSet bound
+to that key represent the concept of one directed weighted edge in a Graph.
 
 There exists an auxiliary "Edge" struct, which also represents the concept of an
-edge in a graph, but this is only used for specific algorithms (like finding
-MSTs) and not for defining Graphs themselves.
+edge in a graph, but this is only used in specific algorithms (like finding
+MSTs) and are NOT for defining Graphs themselves.
 
 ===============================================================================
 
@@ -84,8 +84,10 @@ also result in the same Graph as the above.
       {E, {C}}
   }
 
-See the "example_initializer" function in examples/core_test.cpp for
-verification that this works.
+However, if the Graph instance's is_directed member is true, then rep3 would
+naturally result in a different Graph than rep1 and rep2.
+
+See examples/core_test.cpp for actual examples of this behavior.
 */
 
 #pragma once
@@ -104,18 +106,18 @@ struct Vertex {
 
   const std::string name_;
 
-  // Since the underlying implementation of Graph relies on pointers to const
-  // Vertex, any Vertex data member we want to be able to modify through the
-  // Graph needs to be of mutable type. This gives us the flexibility to add
-  // nonconst data members to Vertex types and still maintain const-correctness
-  // when performing graph algorithms.
-  mutable State state_ = State::UNDISCOVERED;     // search state
-  mutable std::shared_ptr<const Vertex> parent_;  // search tree parent
-  mutable int entry_time_ = 0, exit_time_ = 0;    // dfs time intervals
+  // The Vertex data members below store special states used by graph algorithm
+  // implementations. Making these mutable gives us the flexibility to add other
+  // nonconst Vertex data that should not be modified during the execution of
+  // graph algorithms, but can otherwise be modified for external uses (I like
+  // to think of those members as the "payload" stored by a Vertex).
+  mutable State state_ = State::UNDISCOVERED;   // search state
+  mutable const Vertex* parent_;                // search tree parent
+  mutable int entry_time_ = 0, exit_time_ = 0;  // dfs time intervals
 
   void Reset() const {
     state_ = State::UNDISCOVERED;
-    parent_.reset();
+    parent_ = nullptr;
     entry_time_ = 0;
     exit_time_ = 0;
   }
@@ -138,24 +140,27 @@ inline bool operator!=(const Vertex& lhs, const Vertex& rhs) {
 std::string to_string(const Vertex::State& state);
 
 struct UnderlyingVertexOrder {
-  bool operator()(const std::shared_ptr<Vertex>& lhs,
-                  const std::shared_ptr<Vertex>& rhs) const {
+  bool operator()(const Vertex* lhs, const Vertex* rhs) const {
     return *lhs < *rhs;
   }
-  bool operator()(const std::shared_ptr<const Vertex>& lhs,
-                  const std::shared_ptr<const Vertex>& rhs) const {
+  bool operator()(const std::unique_ptr<Vertex>& lhs,
+                  const std::unique_ptr<Vertex>& rhs) const {
     return *lhs < *rhs;
+  }
+  bool operator()(const std::pair<const Vertex*, double>& lhs,
+                  const std::pair<const Vertex*, double>& rhs) const {
+    return *(lhs.first) < *(rhs.first);
   }
 };
 
 class Graph {
  protected:
-  // Underlying data structure types. Well-tuned unordered maps should also work
-  // here if we need a performance boost.
+  // Underlying data structure types.
+  using VertexSet = std::set<std::unique_ptr<Vertex>, UnderlyingVertexOrder>;
   using AdjacentSet =
-      std::map<std::shared_ptr<const Vertex>, double, UnderlyingVertexOrder>;
-  using VertexMap =
-      std::map<std::shared_ptr<Vertex>, AdjacentSet, UnderlyingVertexOrder>;
+      std::set<std::pair<const Vertex*, double>, UnderlyingVertexOrder>;
+  using AdjacencyMap =
+      std::map<const Vertex*, AdjacentSet, UnderlyingVertexOrder>;
 
  public:
   // Convenience typenames used for user input; not actual underlying types.
@@ -173,19 +178,19 @@ class Graph {
   Graph(InputUnweightedAL unweighted_al, bool is_directed);
 
   // Constructs a fully specified weighted graph.
-  Graph(InputWeightedAL adjacency_list, bool is_directed);
+  Graph(InputWeightedAL weighted_al, bool is_directed);
 
-  // Given a Vertex, obtain a pointer to the singular instance of that Vertex
-  // within this Graph object (i.e. in the keyset of vertex_map_).
-  std::shared_ptr<const Vertex> GetVertexPtr(const Vertex& v) const;
+  // Given a Vertex v, obtain a raw pointer to the singular instance of the
+  // Vertex identical to v managed by this Graph object.
+  const Vertex* GetVertexPtr(const Vertex& v) const;
 
   // Add a freshly-reset copy of the given Vertex to this graph. Duplicates are
   // ignored.
   void AddVertex(const Vertex& v);
 
-  // Add an internal pointer to "dest" to the adjacency set of "source", along
-  // with an associated edge weight. If the given vertices were not already
-  // present in this Graph, they are added.
+  // Add "dest" to the adjacency set of "source", along with an associated edge
+  // weight. If the given vertices were not already present in this Graph, they
+  // are added.
   void AddEdge(const Vertex& source, const Vertex& dest,
                double edge_weight = 1);
 
@@ -198,38 +203,29 @@ class Graph {
   // the start of algorithmic functions present in this library.
   void ResetState();
 
-  // Return a (pointer to a) new copy of this Graph, but with all edges
-  // reversed. Note that this naturally only makes sense for directed graphs.
-  std::shared_ptr<Graph> GetReverseGraph() const;
+  // Factory for a reversed copy of this Graph. Note that this naturally only
+  // makes sense for directed graphs.
+  std::unique_ptr<Graph> GetReverseGraph() const;
 
   // Return a string displaying all vertices (without adjacency sets).
   std::string GetVertexSetStr() const;
 
-  AdjacentSet& GetMutableAdjacentSet(const std::shared_ptr<Vertex>& source);
-  AdjacentSet& GetMutableAdjacentSet(const Vertex& source);
+  AdjacentSet& GetMutableAdjacentSet(const Vertex* source);
+  const AdjacentSet& GetAdjacentSet(const Vertex* source) const;
 
-  const AdjacentSet& GetAdjacentSet(
-      const std::shared_ptr<Vertex>& source) const;
-  const AdjacentSet& GetAdjacentSet(const Vertex& source) const;
-
-  const VertexMap& GetVertexMap() const { return vertex_map_; }
+  const AdjacencyMap& GetAdjacencyMap() const { return adjacency_map_; }
 
   bool IsDirected() { return is_directed_; }
 
  protected:
-  // The keyset of vertex_map_ represents the only copy of Vertices this Graph
-  // stores.
-  VertexMap vertex_map_;
+  VertexSet vertex_set_;
+  AdjacencyMap adjacency_map_;
 
   bool is_directed_;
 
-  // Necessary internal helper for interfacing directly with the map.
-  std::shared_ptr<Vertex> GetMutableVertexPtr(const Vertex& v) const;
-
   // Extensions of std::find
-  VertexMap::const_iterator FindInVertexMap(const Vertex& v) const;
-  VertexMap::const_iterator FindInAdjacentSet(const Vertex& v,
-                                              const AdjacentSet& set) const;
+  VertexSet::const_iterator FindInVertexSet(const Vertex& v) const;
+  AdjacencyMap::const_iterator FindInAdjacencyMap(const Vertex& v) const;
 };
 
 // For a given graph, return a string displaying all vertices and corresponding
@@ -238,11 +234,10 @@ std::string to_string(const Graph& graph);
 
 // An auxiliary Edge type.
 struct Edge {
-  Edge(std::shared_ptr<const Vertex> v1, std::shared_ptr<const Vertex> v2,
-       double weight)
+  Edge(const Vertex* v1, const Vertex* v2, double weight)
       : v1_(v1), v2_(v2), weight_(weight) {}
 
-  std::shared_ptr<const Vertex> v1_, v2_;
+  const Vertex *v1_, *v2_;
   double weight_ = 0;
 };
 

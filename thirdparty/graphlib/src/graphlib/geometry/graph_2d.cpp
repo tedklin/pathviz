@@ -19,8 +19,11 @@ Graph2d::Graph2d(const Input2dAL& al, bool is_directed) : Graph(is_directed) {
 
 void Graph2d::AddVertex(const Vertex2d& v) {
   v.Reset();
-  if (FindInVertexMap(v) == vertex_map_.end()) {
-    vertex_map_[std::make_shared<Vertex2d>(v)];
+  if (FindInVertexSet(v) == vertex_set_.end()) {
+    vertex_set_.insert(std::make_unique<Vertex2d>(v));
+  }
+  if (FindInAdjacencyMap(v) == adjacency_map_.end()) {
+    adjacency_map_[GetVertexPtr(v)];
   }
 }
 
@@ -28,10 +31,13 @@ void Graph2d::AddEdge(const Vertex2d& source, const Vertex2d& dest) {
   AddVertex(source);
   AddVertex(dest);
 
+  auto source_ptr = GetVertexPtr(source);
+  auto dest_ptr = GetVertexPtr(dest);
+
   double edge_weight = distance_2d(source, dest);
-  vertex_map_[GetMutableVertexPtr(source)][GetVertexPtr(dest)] = edge_weight;
+  adjacency_map_.at(source_ptr).insert({dest_ptr, edge_weight});
   if (!is_directed_) {
-    vertex_map_[GetMutableVertexPtr(dest)][GetVertexPtr(source)] = edge_weight;
+    adjacency_map_.at(dest_ptr).insert({source_ptr, edge_weight});
   }
 }
 

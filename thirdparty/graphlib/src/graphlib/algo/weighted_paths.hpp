@@ -13,35 +13,35 @@ namespace graphlib {
 // once destination is processed.
 
 // Dijkstra's algorithm for single-source shortest non-negative weighted paths.
-void dijkstra(Graph* graph, std::shared_ptr<const Vertex> search_root,
-              std::shared_ptr<const Vertex> destination = nullptr);
+void dijkstra(Graph* graph, const Vertex* search_root,
+              const Vertex* destination = nullptr);
 
 // UNTESTED!
 // A faster method for computing single-source shortest paths for edge-weighted
 // DAGs, using a topological sort.
-void dag_paths(Graph* graph, std::shared_ptr<const Vertex> search_root,
-               std::shared_ptr<const Vertex> destination = nullptr);
+void dag_paths(Graph* graph, const Vertex* search_root,
+               const Vertex* destination = nullptr);
 
 // Queue-based Bellman-Ford algorithm for single-source shortest weighted paths
 // in a graph without negative cycles.
-void bellman_ford(Graph* graph, std::shared_ptr<const Vertex> search_root);
+void bellman_ford(Graph* graph, const Vertex* search_root);
 
 // Repeatedly pop the stacks returned by these functions to obtain the
 // corresponding paths.
-std::stack<std::shared_ptr<const Vertex>> shortest_pos_weight_path(
-    Graph* graph, std::shared_ptr<const Vertex> search_root,
-    std::shared_ptr<const Vertex> destination);
-std::stack<std::shared_ptr<const Vertex>> shortest_weighted_path(
-    Graph* graph, std::shared_ptr<const Vertex> search_root,
-    std::shared_ptr<const Vertex> destination);
+std::stack<const Vertex*> shortest_pos_weight_path(Graph* graph,
+                                                   const Vertex* search_root,
+                                                   const Vertex* destination);
+std::stack<const Vertex*> shortest_weighted_path(Graph* graph,
+                                                 const Vertex* search_root,
+                                                 const Vertex* destination);
 
 // To improve the readability of our Floyd-Warshall output matrix type, we
 // enforce an ordering based on the underlying Vertices stored by the matrix
 // rather than the pointer values themselves. (see graph.hpp)
-using DistanceMatrix = std::map<
-    std::shared_ptr<const Vertex>,
-    std::map<std::shared_ptr<const Vertex>, double, UnderlyingVertexOrder>,
-    UnderlyingVertexOrder>;
+using DistanceMatrix =
+    std::map<const Vertex*,
+             std::map<const Vertex*, double, UnderlyingVertexOrder>,
+             UnderlyingVertexOrder>;
 
 // Floyd-Warshall algorithm for all-pairs distance matrix. Doubles as
 // representation for transitive closure.

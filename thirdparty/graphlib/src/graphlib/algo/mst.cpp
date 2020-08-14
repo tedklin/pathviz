@@ -22,10 +22,10 @@ std::string to_string(
   return s;
 }
 
-void prim_visit(Graph* graph, std::shared_ptr<const Vertex> v) {
+void prim_visit(Graph* graph, const Vertex* v) {
   v->state_ = Vertex::State::DISCOVERED;
-  for (auto& adj : graph->GetAdjacentSet(*v)) {
-    std::shared_ptr<const Vertex> v2 = adj.first;
+  for (auto& adj : graph->GetAdjacentSet(v)) {
+    const Vertex* v2 = adj.first;
     double weight = adj.second;
     if (v2->state_ == Vertex::State::UNDISCOVERED) {
       g_crossing_edges.emplace(v, v2, weight);
@@ -33,7 +33,7 @@ void prim_visit(Graph* graph, std::shared_ptr<const Vertex> v) {
   }
 }
 
-// "Lazy" implementation as seen in Sedgewick.
+// "Lazy" implementation of Prim's algorithm as seen in Sedgewick.
 std::vector<Edge> prim_mst(Graph* graph) {
   if (graph->IsDirected()) {
     std::cerr << "Error: Tried to run Prim's algorithm on directed graph!\n";
@@ -47,7 +47,7 @@ std::vector<Edge> prim_mst(Graph* graph) {
 
   // Assuming the given graph is connected, this successfully adds at least one
   // crossing edge to the priority queue to kick off the algorithm.
-  prim_visit(graph, graph->GetVertexMap().cbegin()->first);
+  prim_visit(graph, graph->GetAdjacencyMap().cbegin()->first);
 
   while (!g_crossing_edges.empty()) {
     Edge e = g_crossing_edges.top();
@@ -82,7 +82,7 @@ class VertexUnionFind {
  public:
   VertexUnionFind(Graph* graph) {
     // Initially, each vertex is its own subset / connected component.
-    for (const auto& v : graph->GetVertexMap()) {
+    for (const auto& v : graph->GetAdjacencyMap()) {
       parents_[v.first] = nullptr;
       sizes_[v.first] = 1;
     }
@@ -90,27 +90,25 @@ class VertexUnionFind {
 
   // Returns the "name" of the subset / connected component containing a given
   // Vertex (i.e. the root of the given Vertex's tree.)
-  std::shared_ptr<const Vertex> Find(std::shared_ptr<const Vertex> v) const {
+  const Vertex* Find(const Vertex* v) const {
     while (parents_.at(v)) {
       v = parents_.at(v);
     }
     return v;
   }
 
-  bool IsConnected(std::shared_ptr<const Vertex> v1,
-                   std::shared_ptr<const Vertex> v2) const {
+  bool IsConnected(const Vertex* v1, const Vertex* v2) const {
     return Find(v1) == Find(v2);
   }
 
   // Merge the subsets containing the given Vertices.
-  void Union(std::shared_ptr<const Vertex> v1,
-             std::shared_ptr<const Vertex> v2) {
+  void Union(const Vertex* v1, const Vertex* v2) {
     if (IsConnected(v1, v2)) {
       return;
     }
 
     // Merge the smaller tree into the larger tree to maintain balance.
-    std::shared_ptr<const Vertex> set1 = Find(v1), set2 = Find(v2);
+    const Vertex *set1 = Find(v1), *set2 = Find(v2);
     if (sizes_.at(set1) < sizes_.at(set2)) {
       parents_.at(set1) = set2;
       sizes_.at(set2) += sizes_.at(set1);
@@ -121,9 +119,8 @@ class VertexUnionFind {
   }
 
  private:
-  std::map<std::shared_ptr<const Vertex>, std::shared_ptr<const Vertex>>
-      parents_;
-  std::map<std::shared_ptr<const Vertex>, int> sizes_;
+  std::map<const Vertex*, const Vertex*> parents_;
+  std::map<const Vertex*, int> sizes_;
 };
 
 std::vector<Edge> kruskal_mst(Graph* graph) {
@@ -138,7 +135,7 @@ std::vector<Edge> kruskal_mst(Graph* graph) {
   }
 
   // Add all edges in given graph to priority queue.
-  for (const auto& p : graph->GetVertexMap()) {
+  for (const auto& p : graph->GetAdjacencyMap()) {
     for (const auto& adj : p.second) {
       g_crossing_edges.emplace(p.first, adj.first, adj.second);
     }
@@ -146,15 +143,14 @@ std::vector<Edge> kruskal_mst(Graph* graph) {
 
   VertexUnionFind uf(graph);
   while (!g_crossing_edges.empty() &&
-         mst.size() < graph->GetVertexMap().size()) {
+         mst.size() < graph->GetAdjacencyMap().size()) {
     Edge e = g_crossing_edges.top();
     g_crossing_edges.pop();
 
-    if (uf.IsConnected(e.v1_, e.v2_)) {
-      continue;
+    if (!uf.IsConnected(e.v1_, e.v2_)) {
+      uf.Union(e.v1_, e.v2_);
+      mst.push_back(e);
     }
-    uf.Union(e.v1_, e.v2_);
-    mst.push_back(e);
   }
   return mst;
 }

@@ -17,6 +17,8 @@ std::string to_string(const Vertex::State& state) {
     case Vertex::State::PROCESSED:
       return "2";
       break;
+    default:
+      return "nonexistent Vertex state";
   }
 }
 
@@ -51,32 +53,39 @@ Graph::Graph(InputWeightedAL weighted_al, bool is_directed)
   }
 }
 
-Graph::VertexMap::const_iterator Graph::FindInVertexMap(const Vertex& v) const {
+Graph::VertexSet::const_iterator Graph::FindInVertexSet(const Vertex& v) const {
   return std::find_if(
-      vertex_map_.cbegin(), vertex_map_.cend(),
-      [&](const VertexMap::value_type& p) -> bool { return *(p.first) == v; });
+      vertex_set_.cbegin(), vertex_set_.cend(),
+      [&](const VertexSet::value_type& p) -> bool { return *p == v; });
 }
 
-void Graph::AddVertex(const Vertex& v) {
-  v.Reset();
-  if (FindInVertexMap(v) == vertex_map_.end()) {
-    vertex_map_[std::make_shared<Vertex>(v)];
-  }
+Graph::AdjacencyMap::const_iterator Graph::FindInAdjacencyMap(
+    const Vertex& v) const {
+  return std::find_if(adjacency_map_.cbegin(), adjacency_map_.cend(),
+                      [&](const AdjacencyMap::value_type& p) -> bool {
+                        return *(p.first) == v;
+                      });
 }
 
-std::shared_ptr<Vertex> Graph::GetMutableVertexPtr(const Vertex& v) const {
-  auto vertex_iter = FindInVertexMap(v);
-  if (vertex_iter == vertex_map_.end()) {
+const Vertex* Graph::GetVertexPtr(const Vertex& v) const {
+  auto vertex_iter = FindInVertexSet(v);
+  if (vertex_iter == vertex_set_.end()) {
     throw std::runtime_error(
         "Graph::GetVertexPtr error! Tried to obtain pointer to "
         "nonexistent vertex (" +
         v.name_ + ")\n");
   }
-  return vertex_iter->first;
+  return (*vertex_iter).get();
 }
 
-std::shared_ptr<const Vertex> Graph::GetVertexPtr(const Vertex& v) const {
-  return GetMutableVertexPtr(v);  // adds a low-level const
+void Graph::AddVertex(const Vertex& v) {
+  v.Reset();
+  if (FindInVertexSet(v) == vertex_set_.end()) {
+    vertex_set_.insert(std::make_unique<Vertex>(v));
+  }
+  if (FindInAdjacencyMap(v) == adjacency_map_.end()) {
+    adjacency_map_[GetVertexPtr(v)];
+  }
 }
 
 void Graph::AddEdge(const Vertex& source, const Vertex& dest,
@@ -84,59 +93,56 @@ void Graph::AddEdge(const Vertex& source, const Vertex& dest,
   AddVertex(source);
   AddVertex(dest);
 
-  // There should only be one instance of each Vertex in a Graph, so we store
-  // adjacent vertices as pointers to the main set of Vertices (i.e. the keyset
-  // of vertex_map_).
-  vertex_map_[GetMutableVertexPtr(source)][GetVertexPtr(dest)] = edge_weight;
+  auto source_ptr = GetVertexPtr(source);
+  auto dest_ptr = GetVertexPtr(dest);
+
+  adjacency_map_.at(source_ptr).insert({dest_ptr, edge_weight});
   if (!is_directed_) {
-    vertex_map_[GetMutableVertexPtr(dest)][GetVertexPtr(source)] = edge_weight;
+    adjacency_map_.at(dest_ptr).insert({source_ptr, edge_weight});
   }
 }
 
 bool Graph::EdgeExists(const Vertex& source, const Vertex& dest) const {
-  auto source_iter = FindInVertexMap(source);
-  auto dest_iter = FindInVertexMap(dest);
-
-  if (source_iter == vertex_map_.end() || dest_iter == vertex_map_.end()) {
-    throw std::runtime_error(
-        "Graph::EdgeExists error! Given nonexistent vertices.\n");
+  auto adj_iter = FindInAdjacencyMap(source);
+  const auto& adj_set = adj_iter->second;
+  for (const auto& pair : adj_set) {
+    if (*(pair.first) == dest) {
+      return true;
+    }
   }
-
-  auto adj_iter =
-      std::find_if(source_iter->second.cbegin(), source_iter->second.cend(),
-                   [&](const AdjacentSet::value_type& p) -> bool {
-                     return *(p.first) == dest;
-                   });
-  return adj_iter != source_iter->second.end();
+  return false;
 }
 
 double Graph::EdgeWeight(const Vertex& source, const Vertex& dest) const {
-  if (!EdgeExists(source, dest)) {
-    throw std::runtime_error(
-        "Graph::EdgeWeight error! Given nonexistent edge.\n");
+  auto adj_iter = FindInAdjacencyMap(source);
+  const auto& adj_set = adj_iter->second;
+  for (const auto& pair : adj_set) {
+    if (*(pair.first) == dest) {
+      return pair.second;
+    }
   }
-  return this->GetAdjacentSet(source).at(this->GetVertexPtr(dest));
+  throw std::runtime_error(
+      "Graph::EdgeWeight error! Given nonexistent edge.\n");
 }
 
 void Graph::ResetState() {
-  for (auto& v : vertex_map_) {
-    v.first->Reset();
+  for (auto& v : vertex_set_) {
+    v->Reset();
   }
 }
 
 std::string Graph::GetVertexSetStr() const {
   std::string s("Vertex set:\n");
-  for (const auto& v : vertex_map_) {
-    s += v.first->name_ + "(state=" + graphlib::to_string(v.first->state_) +
-         ") | ";
+  for (const auto& v : vertex_set_) {
+    s += v->name_ + "(state=" + graphlib::to_string(v->state_) + ") | ";
   }
   s += '\n';
   return s;
 }
 
-std::shared_ptr<Graph> Graph::GetReverseGraph() const {
-  std::shared_ptr<Graph> reverse = std::make_shared<Graph>(true);
-  for (const auto& v : this->GetVertexMap()) {
+std::unique_ptr<Graph> Graph::GetReverseGraph() const {
+  std::unique_ptr<Graph> reverse = std::make_unique<Graph>(true);
+  for (const auto& v : this->GetAdjacencyMap()) {
     Vertex source = *(v.first);
     reverse->AddVertex(source);
     for (const auto& adj : v.second) {
@@ -146,27 +152,17 @@ std::shared_ptr<Graph> Graph::GetReverseGraph() const {
   return reverse;
 }
 
-Graph::AdjacentSet& Graph::GetMutableAdjacentSet(
-    const std::shared_ptr<Vertex>& source) {
-  return vertex_map_.at(source);
+Graph::AdjacentSet& Graph::GetMutableAdjacentSet(const Vertex* source) {
+  return adjacency_map_.at(source);
 }
 
-Graph::AdjacentSet& Graph::GetMutableAdjacentSet(const Vertex& source) {
-  return GetMutableAdjacentSet(GetMutableVertexPtr(source));
-}
-
-const Graph::AdjacentSet& Graph::GetAdjacentSet(
-    const std::shared_ptr<Vertex>& source) const {
-  return vertex_map_.at(source);
-}
-
-const Graph::AdjacentSet& Graph::GetAdjacentSet(const Vertex& source) const {
-  return GetAdjacentSet(GetMutableVertexPtr(source));
+const Graph::AdjacentSet& Graph::GetAdjacentSet(const Vertex* source) const {
+  return adjacency_map_.at(source);
 }
 
 std::string to_string(const Graph& graph) {
   std::string s("Adjacency lists:\n");
-  for (const auto& v : graph.GetVertexMap()) {
+  for (const auto& v : graph.GetAdjacencyMap()) {
     s += v.first->name_ + " -> ";
     for (const auto& adj : v.second) {
       s += adj.first->name_ + "(wgt=" + std::to_string(adj.second) + ") | ";

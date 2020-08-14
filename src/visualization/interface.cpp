@@ -79,12 +79,12 @@ visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
   marker.color.g = 1.0f;
   std::vector<geometry_msgs::Point> point_list;
 
-  for (const auto& v : graph.GetVertexMap()) {
+  for (const auto& v : graph.GetAdjacencyMap()) {
     for (const auto& adj : v.second) {
+      point_list.push_back(
+          to_geometry_msg(*(dynamic_cast<const graphlib::Vertex2d*>(v.first))));
       point_list.push_back(to_geometry_msg(
-          *(dynamic_cast<const graphlib::Vertex2d*>(v.first.get()))));
-      point_list.push_back(to_geometry_msg(
-          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first.get()))));
+          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first))));
     }
   }
 
