@@ -36,35 +36,27 @@ void set_marker_defaults(visualization_msgs::Marker& marker) {
   marker.pose.orientation.w = 1.0;
 }
 
-std::vector<visualization_msgs::Marker> to_marker_list(
-    const visibility_map::Terrain& terrain) {
-  std::vector<visualization_msgs::Marker> marker_list;
+visualization_msgs::Marker to_marker(const visibility_map::Terrain& terrain) {
+  visualization_msgs::Marker marker;
+  set_marker_defaults(marker);
+  marker.ns = "terrain";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::LINE_LIST;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.scale.x = 0.1;
+  marker.pose.position.z = 0.02;
+  marker.color.b = 1.0f;
+  std::vector<geometry_msgs::Point> point_list;
 
-  int i = 1;
   for (const auto& polygon : terrain.AllObstacles()) {
-    visualization_msgs::Marker marker;
-    set_marker_defaults(marker);
-
-    marker.ns = "terrain";
-    marker.id = i++;
-    marker.type = visualization_msgs::Marker::LINE_STRIP;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 0.1;
-    marker.pose.position.z = 0.02;
-    marker.color.b = 1.0f;
-    std::vector<geometry_msgs::Point> point_list;
-
-    for (const auto& point : polygon.GetPolygon()) {
-      point_list.push_back(to_geometry_msg(point));
+    for (const auto& edge : polygon.AllEdges()) {
+      point_list.push_back(to_geometry_msg(edge.from));
+      point_list.push_back(to_geometry_msg(edge.to));
     }
-    point_list.push_back(
-        to_geometry_msg(polygon.GetPolygon()[0]));  // close polygon
-
-    marker.points = point_list;
-    marker_list.push_back(marker);
   }
 
-  return marker_list;
+  marker.points = point_list;
+  return marker;
 }
 
 visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
@@ -75,7 +67,7 @@ visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
   marker.id = 0;
   marker.type = visualization_msgs::Marker::LINE_LIST;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = 0.05;
+  marker.scale.x = 0.025;
   marker.color.g = 1.0f;
   std::vector<geometry_msgs::Point> point_list;
 
@@ -90,6 +82,17 @@ visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
 
   marker.points = point_list;
   return marker;
+}
+
+void publish_terrain(const visibility_map::Terrain& terrain,
+                     ros::Publisher* marker_pub) {
+  auto terrain_marker = visualization::to_marker(terrain);
+  marker_pub->publish(terrain_marker);
+}
+
+void publish_graph(const graphlib::Graph2d& graph, ros::Publisher* marker_pub) {
+  auto graph_marker = visualization::to_marker(graph);
+  marker_pub->publish(graph_marker);
 }
 
 }  // namespace visualization
