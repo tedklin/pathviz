@@ -36,16 +36,23 @@ void set_marker_defaults(visualization_msgs::Marker& marker) {
   marker.pose.orientation.w = 1.0;
 }
 
+void set_marker_color(visualization_msgs::Marker& marker, Color color) {
+  marker.color.r = color.r;
+  marker.color.g = color.g;
+  marker.color.b = color.b;
+}
+
 visualization_msgs::Marker to_marker(const visibility_map::Terrain& terrain) {
   visualization_msgs::Marker marker;
   set_marker_defaults(marker);
+  set_marker_color(marker, color::BLUE);
+
   marker.ns = "terrain";
   marker.id = 0;
   marker.type = visualization_msgs::Marker::LINE_LIST;
   marker.action = visualization_msgs::Marker::ADD;
   marker.scale.x = 0.1;
   marker.pose.position.z = 0.02;
-  marker.color.b = 1.0f;
   std::vector<geometry_msgs::Point> point_list;
 
   for (const auto& polygon : terrain.AllObstacles()) {
@@ -62,13 +69,13 @@ visualization_msgs::Marker to_marker(const visibility_map::Terrain& terrain) {
 visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
   visualization_msgs::Marker marker;
   set_marker_defaults(marker);
+  set_marker_color(marker, color::GREEN);
 
   marker.ns = "graph";
   marker.id = 0;
   marker.type = visualization_msgs::Marker::LINE_LIST;
   marker.action = visualization_msgs::Marker::ADD;
   marker.scale.x = 0.025;
-  marker.color.g = 1.0f;
   std::vector<geometry_msgs::Point> point_list;
 
   for (const auto& v : graph.GetAdjacencyMap()) {
