@@ -32,35 +32,16 @@ int main(int argc, char** argv) {
   geometry_2d::Polygon p3({{2.7, 0}, {0, -2.7}, {5, -3}});
 
   visibility_map::Terrain terrain({p1, p2, p3});
-  visualization::publish_terrain(terrain, &marker_pub);
-
   graphlib::Graph2d vis_graph = visibility_map::get_visibility_graph(terrain);
-  // visualization::publish_graph(vis_graph, &marker_pub);
 
-  visualization::LineListAnimator graph_animator(&marker_pub, "vis_graph",
-                                                 visualization::color::ORANGE);
-  for (const auto& v : vis_graph.GetAdjacencyMap()) {
-    for (const auto& adj : v.second) {
-      graphlib::Vertex2d v1 =
-          *(dynamic_cast<const graphlib::Vertex2d*>(v.first));
-      graphlib::Vertex2d v2 =
-          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first));
-      graph_animator.AddLine({{v1.x_, v1.y_}, {v2.x_, v2.y_}});
-      graph_animator.Publish();
-      visualization::sleep_ms(250);
-    }
-  }
-  for (const auto& v : vis_graph.GetAdjacencyMap()) {
-    for (const auto& adj : v.second) {
-      graphlib::Vertex2d v1 =
-          *(dynamic_cast<const graphlib::Vertex2d*>(v.first));
-      graphlib::Vertex2d v2 =
-          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first));
-      graph_animator.RemoveLine({{v1.x_, v1.y_}, {v2.x_, v2.y_}});
-      graph_animator.Publish();
-      visualization::sleep_ms(250);
-    }
-  }
+  visualization::LineListDescriptor terrain_descriptor(
+      visualization::color::BLUE, 0.05, 0.02);
+  visualization::publish_static_terrain(&marker_pub, terrain,
+                                        terrain_descriptor);
+
+  visualization::LineListDescriptor graph_descriptor(
+      visualization::color::YELLOW, 0.025, 0);
+  visualization::publish_static_graph(&marker_pub, vis_graph, graph_descriptor);
 
   ros::spin();
   return 0;

@@ -44,99 +44,40 @@ void set_marker_defaults(visualization_msgs::Marker& marker) {
   set_marker_color(marker, color::BLACK);
 }
 
-visualization_msgs::Marker to_marker(const visibility_map::Terrain& terrain) {
-  visualization_msgs::Marker marker;
-  set_marker_defaults(marker);
-  set_marker_color(marker, color::BLUE);
-
-  marker.ns = "terrain";
-  marker.id = 0;
-  marker.type = visualization_msgs::Marker::LINE_LIST;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = 0.1;
-  marker.pose.position.z = 0.02;
-  std::vector<geometry_msgs::Point> point_list;
-
-  for (const auto& polygon : terrain.AllObstacles()) {
-    for (const auto& edge : polygon.AllEdges()) {
-      point_list.push_back(to_geometry_msg(edge.from));
-      point_list.push_back(to_geometry_msg(edge.to));
-    }
-  }
-
-  marker.points = point_list;
-  return marker;
-}
-
-visualization_msgs::Marker to_marker(const graphlib::Graph2d& graph) {
-  visualization_msgs::Marker marker;
-  set_marker_defaults(marker);
-  set_marker_color(marker, color::GREEN);
-
-  marker.ns = "graph";
-  marker.id = 0;
-  marker.type = visualization_msgs::Marker::LINE_LIST;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = 0.025;
-  std::vector<geometry_msgs::Point> point_list;
-
-  for (const auto& v : graph.GetAdjacencyMap()) {
-    for (const auto& adj : v.second) {
-      point_list.push_back(
-          to_geometry_msg(*(dynamic_cast<const graphlib::Vertex2d*>(v.first))));
-      point_list.push_back(to_geometry_msg(
-          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first))));
-    }
-  }
-
-  marker.points = point_list;
-  return marker;
-}
-
-void publish_terrain(const visibility_map::Terrain& terrain,
-                     ros::Publisher* marker_pub) {
-  auto terrain_marker = visualization::to_marker(terrain);
-  marker_pub->publish(terrain_marker);
-}
-
-void publish_graph(const graphlib::Graph2d& graph, ros::Publisher* marker_pub) {
-  auto graph_marker = visualization::to_marker(graph);
-  marker_pub->publish(graph_marker);
-}
-
-Animator::Animator(ros::Publisher* marker_pub, const std::string& name,
-                   const Color& color)
+VizManager::VizManager(ros::Publisher* marker_pub, const std::string& name)
     : marker_pub_(marker_pub) {
   set_marker_defaults(marker_);
-  set_marker_color(marker_, color);
   marker_.ns = name;
   marker_.id = 0;
   marker_.action = visualization_msgs::Marker::ADD;
 }
 
-LineListAnimator::LineListAnimator(ros::Publisher* marker_pub,
-                                   const std::string& name, const Color& color)
-    : Animator(marker_pub, name, color) {
+LineListManager::LineListManager(ros::Publisher* marker_pub,
+                                 const std::string& name,
+                                 const LineListDescriptor& descriptor)
+    : VizManager(marker_pub, name) {
   marker_.type = visualization_msgs::Marker::LINE_LIST;
-  marker_.scale.x = 0.05;
+  marker_.scale.x = descriptor.width_;
+  marker_.pose.position.z = descriptor.z_;
+  set_marker_color(marker_, descriptor.color_);
 }
 
-void LineListAnimator::AddLine(const geometry_2d::LineSegment& line) {
+void LineListManager::AddLine(const geometry_2d::LineSegment& line) {
   if (std::find(lines_.begin(), lines_.end(), line) == lines_.end()) {
     lines_.push_back(line);
   }
 }
 
-void LineListAnimator::RemoveLine(const geometry_2d::LineSegment& line) {
+void LineListManager::RemoveLine(const geometry_2d::LineSegment& line) {
   auto iter = std::find(lines_.begin(), lines_.end(), line);
   if (std::find(lines_.begin(), lines_.end(), line) != lines_.end()) {
     lines_.erase(iter);
   }
 }
 
-void LineListAnimator::Clear() { lines_.clear(); }
+void LineListManager::Clear() { lines_.clear(); }
 
-void LineListAnimator::Publish() {
+void LineListManager::Publish() {
   if (lines_.empty()) {
     marker_.action = visualization_msgs::Marker::DELETE;
     marker_pub_->publish(marker_);
@@ -153,16 +94,18 @@ void LineListAnimator::Publish() {
   marker_pub_->publish(marker_);
 }
 
-PointListAnimator::PointListAnimator(ros::Publisher* marker_pub,
-                                     const std::string& name,
-                                     const Color& color)
-    : Animator(marker_pub, name, color) {
+PointListManager::PointListManager(ros::Publisher* marker_pub,
+                                   const std::string& name,
+                                   const PointListDescriptor& descriptor)
+    : VizManager(marker_pub, name) {
   marker_.type = visualization_msgs::Marker::POINTS;
-  marker_.scale.x = 0.1;
-  marker_.scale.y = 0.1;
+  marker_.scale.x = descriptor.size_;
+  marker_.scale.y = descriptor.size_;
+  marker_.pose.position.z = descriptor.z_;
+  set_marker_color(marker_, descriptor.color_);
 }
 
-void PointListAnimator::AddPoint(const geometry_2d::Point& point) {
+void PointListManager::AddPoint(const geometry_2d::Point& point) {
   auto iter =
       std::find_if(point_msgs_.begin(), point_msgs_.end(),
                    [&point](const geometry_msgs::Point& point_msg) {
@@ -173,7 +116,7 @@ void PointListAnimator::AddPoint(const geometry_2d::Point& point) {
   }
 }
 
-void PointListAnimator::RemovePoint(const geometry_2d::Point& point) {
+void PointListManager::RemovePoint(const geometry_2d::Point& point) {
   auto iter =
       std::find_if(point_msgs_.begin(), point_msgs_.end(),
                    [&point](const geometry_msgs::Point& point_msg) {
@@ -184,9 +127,9 @@ void PointListAnimator::RemovePoint(const geometry_2d::Point& point) {
   }
 }
 
-void PointListAnimator::Clear() { point_msgs_.clear(); }
+void PointListManager::Clear() { point_msgs_.clear(); }
 
-void PointListAnimator::Publish() {
+void PointListManager::Publish() {
   if (point_msgs_.empty()) {
     marker_.action = visualization_msgs::Marker::DELETE;
     marker_pub_->publish(marker_);
@@ -199,6 +142,40 @@ void PointListAnimator::Publish() {
 
 void sleep_ms(int ms) {
   std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}
+
+static int terrain_index = 0;
+void publish_static_terrain(ros::Publisher* marker_pub,
+                            const visibility_map::Terrain& terrain,
+                            const LineListDescriptor& descriptor) {
+  LineListManager manager(
+      marker_pub, "terrain" + std::to_string(terrain_index++), descriptor);
+
+  for (const auto& polygon : terrain.AllObstacles()) {
+    for (const auto& edge : polygon.AllEdges()) {
+      manager.AddLine(edge);
+    }
+  }
+  manager.Publish();
+}
+
+static int graph_index = 0;
+void publish_static_graph(ros::Publisher* marker_pub,
+                          const graphlib::Graph2d& graph,
+                          const LineListDescriptor& descriptor) {
+  LineListManager manager(marker_pub, "graph" + std::to_string(graph_index++),
+                          descriptor);
+
+  for (const auto& v : graph.GetAdjacencyMap()) {
+    for (const auto& adj : v.second) {
+      graphlib::Vertex2d v1 =
+          *(dynamic_cast<const graphlib::Vertex2d*>(v.first));
+      graphlib::Vertex2d v2 =
+          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first));
+      manager.AddLine({{v1.x_, v1.y_}, {v2.x_, v2.y_}});
+    }
+  }
+  manager.Publish();
 }
 
 }  // namespace visualization
