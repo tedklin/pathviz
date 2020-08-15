@@ -35,7 +35,32 @@ int main(int argc, char** argv) {
   visualization::publish_terrain(terrain, &marker_pub);
 
   graphlib::Graph2d vis_graph = visibility_map::get_visibility_graph(terrain);
-  visualization::publish_graph(vis_graph, &marker_pub);
+  // visualization::publish_graph(vis_graph, &marker_pub);
+
+  visualization::LineListAnimator graph_animator(&marker_pub, "vis_graph",
+                                                 visualization::color::ORANGE);
+  for (const auto& v : vis_graph.GetAdjacencyMap()) {
+    for (const auto& adj : v.second) {
+      graphlib::Vertex2d v1 =
+          *(dynamic_cast<const graphlib::Vertex2d*>(v.first));
+      graphlib::Vertex2d v2 =
+          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first));
+      graph_animator.AddLine({{v1.x_, v1.y_}, {v2.x_, v2.y_}});
+      graph_animator.Publish();
+      visualization::sleep_ms(250);
+    }
+  }
+  for (const auto& v : vis_graph.GetAdjacencyMap()) {
+    for (const auto& adj : v.second) {
+      graphlib::Vertex2d v1 =
+          *(dynamic_cast<const graphlib::Vertex2d*>(v.first));
+      graphlib::Vertex2d v2 =
+          *(dynamic_cast<const graphlib::Vertex2d*>(adj.first));
+      graph_animator.RemoveLine({{v1.x_, v1.y_}, {v2.x_, v2.y_}});
+      graph_animator.Publish();
+      visualization::sleep_ms(250);
+    }
+  }
 
   ros::spin();
   return 0;

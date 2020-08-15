@@ -1,5 +1,9 @@
 #include "pathviz/visualization/interface.hpp"
 
+#include <algorithm>
+#include <chrono>
+#include <thread>
+
 namespace pathviz {
 namespace visualization {
 
@@ -17,15 +21,17 @@ geometry_msgs::Point to_geometry_msg(const graphlib::Vertex2d& vertex) {
   return p;
 }
 
+void set_marker_color(visualization_msgs::Marker& marker, Color color) {
+  marker.color.r = color.r;
+  marker.color.g = color.g;
+  marker.color.b = color.b;
+  marker.color.a = color.a;
+}
+
 void set_marker_defaults(visualization_msgs::Marker& marker) {
   marker.header.frame_id = "my_frame";
   marker.header.stamp = ros::Time::now();
   marker.lifetime = ros::Duration();
-
-  marker.color.a = 1.0;
-  marker.color.r = 0.0f;
-  marker.color.g = 0.0f;
-  marker.color.b = 0.0f;
 
   marker.pose.position.x = 0;
   marker.pose.position.y = 0;
@@ -34,12 +40,8 @@ void set_marker_defaults(visualization_msgs::Marker& marker) {
   marker.pose.orientation.y = 0.0;
   marker.pose.orientation.z = 0.0;
   marker.pose.orientation.w = 1.0;
-}
 
-void set_marker_color(visualization_msgs::Marker& marker, Color color) {
-  marker.color.r = color.r;
-  marker.color.g = color.g;
-  marker.color.b = color.b;
+  set_marker_color(marker, color::BLACK);
 }
 
 visualization_msgs::Marker to_marker(const visibility_map::Terrain& terrain) {
@@ -100,6 +102,103 @@ void publish_terrain(const visibility_map::Terrain& terrain,
 void publish_graph(const graphlib::Graph2d& graph, ros::Publisher* marker_pub) {
   auto graph_marker = visualization::to_marker(graph);
   marker_pub->publish(graph_marker);
+}
+
+Animator::Animator(ros::Publisher* marker_pub, const std::string& name,
+                   const Color& color)
+    : marker_pub_(marker_pub) {
+  set_marker_defaults(marker_);
+  set_marker_color(marker_, color);
+  marker_.ns = name;
+  marker_.id = 0;
+  marker_.action = visualization_msgs::Marker::ADD;
+}
+
+LineListAnimator::LineListAnimator(ros::Publisher* marker_pub,
+                                   const std::string& name, const Color& color)
+    : Animator(marker_pub, name, color) {
+  marker_.type = visualization_msgs::Marker::LINE_LIST;
+  marker_.scale.x = 0.05;
+}
+
+void LineListAnimator::AddLine(const geometry_2d::LineSegment& line) {
+  if (std::find(lines_.begin(), lines_.end(), line) == lines_.end()) {
+    lines_.push_back(line);
+  }
+}
+
+void LineListAnimator::RemoveLine(const geometry_2d::LineSegment& line) {
+  auto iter = std::find(lines_.begin(), lines_.end(), line);
+  if (std::find(lines_.begin(), lines_.end(), line) != lines_.end()) {
+    lines_.erase(iter);
+  }
+}
+
+void LineListAnimator::Clear() { lines_.clear(); }
+
+void LineListAnimator::Publish() {
+  if (lines_.empty()) {
+    marker_.action = visualization_msgs::Marker::DELETE;
+    marker_pub_->publish(marker_);
+    return;
+  }
+
+  std::vector<geometry_msgs::Point> point_list;
+  for (const auto& line : lines_) {
+    point_list.push_back(to_geometry_msg(line.from));
+    point_list.push_back(to_geometry_msg(line.to));
+  }
+  marker_.points = point_list;  // TODO: convert to rvalue to move?
+
+  marker_pub_->publish(marker_);
+}
+
+PointListAnimator::PointListAnimator(ros::Publisher* marker_pub,
+                                     const std::string& name,
+                                     const Color& color)
+    : Animator(marker_pub, name, color) {
+  marker_.type = visualization_msgs::Marker::POINTS;
+  marker_.scale.x = 0.1;
+  marker_.scale.y = 0.1;
+}
+
+void PointListAnimator::AddPoint(const geometry_2d::Point& point) {
+  auto iter =
+      std::find_if(point_msgs_.begin(), point_msgs_.end(),
+                   [&point](const geometry_msgs::Point& point_msg) {
+                     return point.x == point_msg.x && point.y == point_msg.y;
+                   });
+  if (iter == point_msgs_.end()) {
+    point_msgs_.push_back(to_geometry_msg(point));
+  }
+}
+
+void PointListAnimator::RemovePoint(const geometry_2d::Point& point) {
+  auto iter =
+      std::find_if(point_msgs_.begin(), point_msgs_.end(),
+                   [&point](const geometry_msgs::Point& point_msg) {
+                     return point.x == point_msg.x && point.y == point_msg.y;
+                   });
+  if (iter != point_msgs_.end()) {
+    point_msgs_.erase(iter);
+  }
+}
+
+void PointListAnimator::Clear() { point_msgs_.clear(); }
+
+void PointListAnimator::Publish() {
+  if (point_msgs_.empty()) {
+    marker_.action = visualization_msgs::Marker::DELETE;
+    marker_pub_->publish(marker_);
+    return;
+  }
+  marker_.action = visualization_msgs::Marker::ADD;
+  marker_.points = point_msgs_;
+  marker_pub_->publish(marker_);
+}
+
+void sleep_ms(int ms) {
+  std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 }  // namespace visualization
