@@ -8,10 +8,7 @@
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
 
-#include "graphlib/geometry/graph_2d.hpp"
-
 #include "pathviz/geometry/geometry_2d.hpp"
-#include "pathviz/visibility_map/visibility_graph.hpp"
 
 namespace pathviz {
 namespace visualization {
@@ -23,7 +20,7 @@ struct Color {
 namespace color {
 constexpr Color BLACK{0, 0, 0, 1}, RED{1, 0, 0, 1}, GREEN{0, 1, 0, 1},
     BLUE{0, 0, 1, 1}, WHITE{1, 1, 1, 1}, YELLOW{1, 1, 0, 1},
-    ORANGE{1, 0.5, 0, 1}, PURPLE{1, 0, 1, 1}, TRANSPARENT{0, 0, 0, 0};
+    ORANGE{1, 0.5, 0, 1}, PURPLE{1, 0, 1, 1}, TRANSPARENT{0, 0, 0, 0.01};
 }  // namespace color
 
 struct LineListDescriptor {
@@ -42,20 +39,22 @@ struct PointListDescriptor {
   double size_, z_;
 };
 
-class VizManager {
+class MarkerManager {
  public:
-  VizManager(ros::Publisher* marker_pub, const std::string& name);
+  MarkerManager(ros::Publisher* marker_pub, const std::string& name);
 
-  virtual ~VizManager() = default;
+  virtual ~MarkerManager() = default;
 
   virtual void Publish() = 0;
+
+  void Hide();
 
  protected:
   ros::Publisher* marker_pub_;
   visualization_msgs::Marker marker_;
 };
 
-class LineListManager : public VizManager {
+class LineListManager : public MarkerManager {
  public:
   LineListManager(ros::Publisher* marker_pub, const std::string& name,
                   const LineListDescriptor& descriptor);
@@ -68,9 +67,10 @@ class LineListManager : public VizManager {
 
  private:
   std::vector<geometry_2d::LineSegment> lines_;
+  Color color_;
 };
 
-class PointListManager : public VizManager {
+class PointListManager : public MarkerManager {
  public:
   PointListManager(ros::Publisher* marker_pub, const std::string& name,
                    const PointListDescriptor& descriptor);
@@ -82,19 +82,11 @@ class PointListManager : public VizManager {
   void Publish() override;
 
  private:
-  std::vector<geometry_msgs::Point> point_msgs_;
+  std::vector<geometry_2d::Point> points_;
+  Color color_;
 };
 
 void sleep_ms(int ms);
-
-void publish_static_terrain(ros::Publisher* marker_pub,
-                            const visibility_map::Terrain& terrain,
-                            const LineListDescriptor& line_descriptor);
-
-void publish_static_graph(ros::Publisher* marker_pub,
-                          const graphlib::Graph2d& graph,
-                          const PointListDescriptor& point_descriptor,
-                          const LineListDescriptor& line_descriptor);
 
 }  // namespace visualization
 }  // namespace pathviz
