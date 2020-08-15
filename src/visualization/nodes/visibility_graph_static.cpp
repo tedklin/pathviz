@@ -9,6 +9,7 @@
 #include "pathviz/visualization/interface.hpp"
 
 using namespace pathviz;
+using namespace pathviz::visualization;
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "visibility_graph_node");
@@ -34,14 +35,13 @@ int main(int argc, char** argv) {
   visibility_map::Terrain terrain({p1, p2, p3});
   graphlib::Graph2d vis_graph = visibility_map::get_visibility_graph(terrain);
 
-  visualization::LineListDescriptor terrain_descriptor(
-      visualization::color::BLUE, 0.05, 0.02);
-  visualization::publish_static_terrain(&marker_pub, terrain,
-                                        terrain_descriptor);
+  LineListDescriptor terrain_descriptor(color::BLUE, 0.05, 0.02);
+  publish_static_terrain(&marker_pub, terrain, terrain_descriptor);
 
-  visualization::LineListDescriptor graph_descriptor(
-      visualization::color::YELLOW, 0.025, 0);
-  visualization::publish_static_graph(&marker_pub, vis_graph, graph_descriptor);
+  LineListDescriptor graph_edge_descriptor(color::GREEN, 0.025, 0);
+  PointListDescriptor graph_vertex_descriptor(color::PURPLE, 0.2, 0);
+  publish_static_graph(&marker_pub, vis_graph, graph_vertex_descriptor,
+                       graph_edge_descriptor);
 
   ros::spin();
   return 0;
