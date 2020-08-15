@@ -34,5 +34,5 @@ macro(pathviz_add_node EXAMPLENAME)
   target_link_libraries(${EXAMPLENAME} PRIVATE pathviz ${catkin_LIBRARIES})
 endmacro()
 
-pathviz_add_node(visibility_graph_node visualization/visibility_graph_node.cpp)
+pathviz_add_node(visibility_graph_static visualization/nodes/visibility_graph_static.cpp)
 # ^^^ ADD NEW NODES HERE

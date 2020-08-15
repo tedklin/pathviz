@@ -89,11 +89,12 @@ void sleep_ms(int ms);
 
 void publish_static_terrain(ros::Publisher* marker_pub,
                             const visibility_map::Terrain& terrain,
-                            const LineListDescriptor& descriptor);
+                            const LineListDescriptor& line_descriptor);
 
 void publish_static_graph(ros::Publisher* marker_pub,
                           const graphlib::Graph2d& graph,
-                          const LineListDescriptor& descriptor);
+                          const PointListDescriptor& point_descriptor,
+                          const LineListDescriptor& line_descriptor);
 
 }  // namespace visualization
 }  // namespace pathviz
