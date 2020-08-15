@@ -3,8 +3,10 @@
 #####################
 
 list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/geometry/geometry_2d.cpp")
-list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visibility_map/visibility_graph.cpp")
 list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visualization/interface.cpp")
+
+list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visibility_map/visibility_graph.cpp")
+list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visualization/visibility_graph_helper.cpp")
 # ^^^ APPEND NEW LIBRARY SOURCE FILES TO THE SOURCE_LIST
 
 # Make an automatic library - will be static or dynamic based on user setting
@@ -16,8 +18,8 @@ target_include_directories(pathviz PUBLIC ${PROJECT_SOURCE_DIR}/src)
 # Dependencies
 target_link_libraries(pathviz PUBLIC graphlib ${catkin_LIBRARIES})
 
-# All users of this library will need at least C++11
-target_compile_features(pathviz PUBLIC cxx_std_11)
+# All users of this library will need at least C++14
+target_compile_features(pathviz PUBLIC cxx_std_14)
 
 
 #######################
@@ -35,4 +37,5 @@ macro(pathviz_add_node EXAMPLENAME)
 endmacro()
 
 pathviz_add_node(visibility_graph_static visualization/nodes/visibility_graph_static.cpp)
+pathviz_add_node(visibility_graph_animated visualization/nodes/visibility_graph_animated.cpp)
 # ^^^ ADD NEW NODES HERE

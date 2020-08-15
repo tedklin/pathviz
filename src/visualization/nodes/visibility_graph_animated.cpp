@@ -27,6 +27,21 @@ int main(int argc, char** argv) {
     sleep(1);
   }
 
+  LineListDescriptor terrain_descriptor(color::BLUE, 0.05, 0);
+  PointListDescriptor current_source_descriptor(color::PURPLE, 0.2, 0.04);
+  PointListDescriptor current_target_descriptor(color::ORANGE, 0.2, 0.04);
+  LineListDescriptor current_edge_descriptor(color::ORANGE, 0.03, 0.02);
+  LineListDescriptor active_edges_descriptor(color::RED, 0.05, 0.02);
+  LineListDescriptor valid_edges_descriptor(color::GREEN, 0.05, 0.04);
+  LineListDescriptor invalid_edges_descriptor(color::BLACK, 0.05, 0.04);
+
+  double update_rate_ms = 1000;
+  visibility_map::AnimationManager animation_manager(
+      &marker_pub, update_rate_ms, current_source_descriptor,
+      current_target_descriptor, current_edge_descriptor,
+      active_edges_descriptor, valid_edges_descriptor,
+      invalid_edges_descriptor);
+
   geometry_2d::Polygon p1(
       {{0, 0}, {0.5, 3}, {-0.7, 4.8}, {-4, 3.7}, {-3.3, 1.5}, {-1.5, 2.5}});
   geometry_2d::Polygon p2(
@@ -34,15 +49,10 @@ int main(int argc, char** argv) {
   geometry_2d::Polygon p3({{2.7, 0}, {0, -2.7}, {5, -3}});
 
   visibility_map::Terrain terrain({p1, p2, p3});
-  graphlib::Graph2d vis_graph = visibility_map::get_visibility_graph(terrain);
-
-  LineListDescriptor terrain_descriptor(color::BLUE, 0.05, 0.02);
   publish_static_terrain(&marker_pub, terrain, terrain_descriptor);
 
-  LineListDescriptor graph_edge_descriptor(color::GREEN, 0.025, 0);
-  PointListDescriptor graph_vertex_descriptor(color::PURPLE, 0.2, 0);
-  publish_static_graph(&marker_pub, vis_graph, graph_vertex_descriptor,
-                       graph_edge_descriptor);
+  graphlib::Graph2d vis_graph =
+      visibility_map::get_visibility_graph(terrain, false, &animation_manager);
 
   ros::spin();
   return 0;

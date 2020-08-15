@@ -49,6 +49,31 @@ const geometry_2d::Polygon& Terrain::GetObstacle(
   return obstacles_.at(GetObstacleIndex(vertex));
 }
 
+AnimationManager::AnimationManager(
+    ros::Publisher* marker_pub, double update_rate_ms,
+    const visualization::PointListDescriptor& current_source_descriptor,
+    const visualization::PointListDescriptor& current_target_descriptor,
+    const visualization::LineListDescriptor& current_edge_descriptor,
+    const visualization::LineListDescriptor& active_edges_descriptor,
+    const visualization::LineListDescriptor& valid_edges_descriptor,
+    const visualization::LineListDescriptor& invalid_edges_descriptor)
+    : marker_pub_(marker_pub), update_rate_ms_(update_rate_ms) {
+  current_source_vertex_ = std::make_unique<visualization::PointListManager>(
+      marker_pub, "current_source_vertex", current_source_descriptor);
+  current_target_vertex_ = std::make_unique<visualization::PointListManager>(
+      marker_pub, "current_target_vertex", current_target_descriptor);
+  current_edge_ = std::make_unique<visualization::LineListManager>(
+      marker_pub, "current_edge", current_edge_descriptor);
+  active_edges_ = std::make_unique<visualization::LineListManager>(
+      marker_pub, "active_edges", active_edges_descriptor);
+  valid_edges_ = std::make_unique<visualization::LineListManager>(
+      marker_pub, "valid_edges", valid_edges_descriptor);
+  invalid_edges_ = std::make_unique<visualization::LineListManager>(
+      marker_pub, "invalid_edges", invalid_edges_descriptor);
+  total_valid_edges_ = std::make_unique<visualization::LineListManager>(
+      marker_pub, "total_valid_edges", valid_edges_descriptor);
+}
+
 bool is_visible(const Terrain& terrain, const geometry_2d::Point& source,
                 const geometry_2d::Point& target,
                 const std::vector<geometry_2d::LineSegment>& active_edges) {
@@ -105,11 +130,19 @@ bool is_visible(const Terrain& terrain, const geometry_2d::Point& source,
   return true;
 }
 
+// TODO: break up this behemoth function into smaller parts
 // Lee's rotational plane sweep algorithm.
 // The implementation here sweeps counterclockwise starting from the negative
 // x-axis w.r.t. the source Point (natural ordering with atan2).
 std::set<geometry_2d::Point> get_visible_vertices(
-    const Terrain& terrain, const geometry_2d::Point& source, bool verbose) {
+    const Terrain& terrain, const geometry_2d::Point& source, bool verbose,
+    AnimationManager* animation_manager) {
+  if (animation_manager) {
+    animation_manager->current_source_vertex_->AddPoint(source);
+    animation_manager->current_source_vertex_->Publish();
+    visualization::sleep_ms(animation_manager->update_rate_ms_);
+  }
+
   std::set<geometry_2d::Point> visible_vertices;
 
   // Sort all non-source Points by sweep order.
@@ -166,6 +199,13 @@ std::set<geometry_2d::Point> get_visible_vertices(
     }
     std::cout << "\n\nbegin sweep\n\n";
   }
+  if (animation_manager) {
+    for (const auto& edge : active_edges) {
+      animation_manager->active_edges_->AddLine(edge);
+    }
+    animation_manager->active_edges_->Publish();
+    visualization::sleep_ms(animation_manager->update_rate_ms_);
+  }
 
   // Sweep.
   for (auto iter = ordered_points.cbegin(); iter != ordered_points.cend();
@@ -182,11 +222,37 @@ std::set<geometry_2d::Point> get_visible_vertices(
                            // already known to be not visible, we can skip the
                            // usual visibility check
     for (const auto& point : colinear_points) {
+      if (animation_manager) {
+        animation_manager->current_target_vertex_->Clear();
+        animation_manager->current_target_vertex_->AddPoint(point);
+        animation_manager->current_target_vertex_->Publish();
+
+        animation_manager->current_edge_->Clear();
+        animation_manager->current_edge_->AddLine({source, point});
+        animation_manager->current_edge_->Publish();
+        visualization::sleep_ms(animation_manager->update_rate_ms_);
+      }
+
       // Add visible vertices.
       if (!blocked && is_visible(terrain, source, point, active_edges)) {
         visible_vertices.insert(point);
+
+        if (animation_manager) {
+          animation_manager->total_valid_edges_->AddLine({source, point});
+          animation_manager->valid_edges_->AddLine({source, point});
+          animation_manager->valid_edges_->Publish();
+        }
       } else {
         blocked = true;
+
+        if (animation_manager) {
+          animation_manager->invalid_edges_->AddLine({source, point});
+          animation_manager->invalid_edges_->Publish();
+        }
+      }
+
+      if (animation_manager) {
+        visualization::sleep_ms(animation_manager->update_rate_ms_);
       }
 
       // Add new active edges and remove any that are actually ending at this
@@ -201,16 +267,38 @@ std::set<geometry_2d::Point> get_visible_vertices(
       auto iter = std::find(active_edges.begin(), active_edges.end(),
                             geometry_2d::reverse(incident_edges.first));
       if (iter != active_edges.end()) {
+        if (animation_manager) {
+          animation_manager->active_edges_->RemoveLine(*iter);
+        }
+
         active_edges.erase(iter);
       } else {
+        if (animation_manager) {
+          animation_manager->active_edges_->AddLine(incident_edges.first);
+        }
+
         active_edges.push_back(incident_edges.first);
       }
+
       iter = std::find(active_edges.begin(), active_edges.end(),
                        geometry_2d::reverse(incident_edges.second));
       if (iter != active_edges.end()) {
+        if (animation_manager) {
+          animation_manager->active_edges_->RemoveLine(*iter);
+        }
+
         active_edges.erase(iter);
       } else {
+        if (animation_manager) {
+          animation_manager->active_edges_->AddLine(incident_edges.second);
+        }
+
         active_edges.push_back(incident_edges.second);
+      }
+
+      if (animation_manager) {
+        animation_manager->active_edges_->Publish();
+        visualization::sleep_ms(animation_manager->update_rate_ms_);
       }
 
       if (verbose) {
@@ -232,16 +320,46 @@ std::set<geometry_2d::Point> get_visible_vertices(
     }
     std::cout << "\n\n";
   }
+  if (animation_manager) {
+    animation_manager->active_edges_->Clear();
+    animation_manager->active_edges_->Publish();
+
+    animation_manager->invalid_edges_->Clear();
+    animation_manager->invalid_edges_->Publish();
+
+    animation_manager->current_edge_->Clear();
+    animation_manager->current_edge_->Publish();
+
+    animation_manager->current_target_vertex_->Clear();
+    animation_manager->current_target_vertex_->Publish();
+
+    animation_manager->current_source_vertex_->Clear();
+    animation_manager->current_source_vertex_->Publish();
+
+    visualization::sleep_ms(animation_manager->update_rate_ms_);
+
+    animation_manager->valid_edges_->Clear();
+    animation_manager->valid_edges_->Publish();
+  }
   return visible_vertices;
 }
 
-graphlib::Graph2d get_visibility_graph(const Terrain& terrain, bool verbose) {
+graphlib::Graph2d get_visibility_graph(const Terrain& terrain, bool verbose,
+                                       AnimationManager* animation_manager) {
   graphlib::Graph2d graph(false);
   for (const auto& point : terrain.AllVertices()) {
-    auto visible_vertices = get_visible_vertices(terrain, point, verbose);
+    auto visible_vertices =
+        get_visible_vertices(terrain, point, verbose, animation_manager);
     for (const auto& visible_vertex : visible_vertices) {
       graph.AddEdge(graphlib::Vertex2d(point.x, point.y),
                     graphlib::Vertex2d(visible_vertex.x, visible_vertex.y));
+    }
+
+    if (animation_manager) {
+      animation_manager->total_valid_edges_->Publish();
+      visualization::sleep_ms(animation_manager->update_rate_ms_ * 3);
+
+      animation_manager->total_valid_edges_->Hide();
     }
   }
   return graph;
