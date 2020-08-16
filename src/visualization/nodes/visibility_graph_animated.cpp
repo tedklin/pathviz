@@ -54,6 +54,11 @@ int main(int argc, char** argv) {
   graphlib::Graph2d vis_graph =
       visibility_map::get_visibility_graph(terrain, false, &animation_manager);
 
+  LineListDescriptor graph_edge_descriptor(color::GREEN, 0.025, -0.02);
+  PointListDescriptor graph_vertex_descriptor(color::PURPLE, 0.2, 0);
+  publish_static_graph(&marker_pub, vis_graph, graph_vertex_descriptor,
+                       graph_edge_descriptor);
+
   ros::spin();
   return 0;
 }

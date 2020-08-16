@@ -270,13 +270,11 @@ std::set<geometry_2d::Point> get_visible_vertices(
         if (animation_manager) {
           animation_manager->active_edges_->RemoveLine(*iter);
         }
-
         active_edges.erase(iter);
       } else {
         if (animation_manager) {
           animation_manager->active_edges_->AddLine(incident_edges.first);
         }
-
         active_edges.push_back(incident_edges.first);
       }
 
@@ -286,13 +284,11 @@ std::set<geometry_2d::Point> get_visible_vertices(
         if (animation_manager) {
           animation_manager->active_edges_->RemoveLine(*iter);
         }
-
         active_edges.erase(iter);
       } else {
         if (animation_manager) {
           animation_manager->active_edges_->AddLine(incident_edges.second);
         }
-
         active_edges.push_back(incident_edges.second);
       }
 
