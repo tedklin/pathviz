@@ -40,4 +40,6 @@ endmacro()
 
 pathviz_add_node(visibility_graph_static visualization/nodes/visibility_graph_static.cpp)
 pathviz_add_node(visibility_graph_animated visualization/nodes/visibility_graph_animated.cpp)
+pathviz_add_node(dijkstra_animated visualization/nodes/dijkstra_animated.cpp)
+pathviz_add_node(a_star_animated visualization/nodes/a_star_animated.cpp)
 # ^^^ ADD NEW NODES HERE
