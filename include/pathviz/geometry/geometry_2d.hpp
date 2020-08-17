@@ -119,7 +119,7 @@ class Polygon {
 // TODO: overload equality operator for Polygon, taking into account possible
 // offset and wrap-around
 
-// Current implementation of Terrain assumes no obstacles overlap or share
+// The current implementation of Terrain assumes no obstacles overlap or share
 // common vertices.
 class Terrain {
  public:
@@ -132,7 +132,6 @@ class Terrain {
   std::set<geometry_2d::Point> AllVertices() const;
 
   int GetObstacleIndex(const Point& vertex) const;
-
   const Polygon& GetObstacle(const Point& vertex) const;
 
  private:

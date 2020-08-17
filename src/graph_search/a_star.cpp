@@ -88,7 +88,6 @@ std::stack<const graphlib::Vertex2d*> a_star(
 
   std::vector<const Vertex2d*> min_heap;
   min_heap.push_back(search_root);
-
   if (animation_manager) {
     animation_manager->fringe_->AddPoint({search_root->x_, search_root->y_});
     animation_manager->fringe_->Publish();
@@ -99,7 +98,6 @@ std::stack<const graphlib::Vertex2d*> a_star(
     std::pop_heap(min_heap.begin(), min_heap.end(), pq_ordering);
     const Vertex2d* v1 = min_heap.back();
     min_heap.pop_back();
-
     if (animation_manager) {
       animation_manager->fringe_->RemovePoint({v1->x_, v1->y_});
       animation_manager->fringe_->Publish();
@@ -119,7 +117,6 @@ std::stack<const graphlib::Vertex2d*> a_star(
       if (dist_to_root.at(v2) > dist_to_root.at(v1) + weight) {
         dist_to_root.at(v2) = dist_to_root.at(v1) + weight;
         v2->parent_ = v1;
-
         if (std::find(min_heap.begin(), min_heap.end(), v2) != min_heap.end()) {
           // If v2 is already in the min-heap, do a complete reheapify of the
           // underlying vector with v2's updated "g_dist_to_root" value.
@@ -130,7 +127,6 @@ std::stack<const graphlib::Vertex2d*> a_star(
           min_heap.push_back(v2);
           std::push_heap(min_heap.begin(), min_heap.end(), pq_ordering);
         }
-
         if (animation_manager) {
           animation_manager->fringe_->AddPoint({v2->x_, v2->y_});
           animation_manager->relaxed_edges_->AddLine(
