@@ -29,7 +29,7 @@ ROS launch files that run the visualizations automatically are included.
 
 *Side notes:*
 - *The implementation here sweeps counterclockwise starting at the negative x-axis w.r.t. the current source vertex.*
-- *This animation clocks in at over 10 minutes, so unless you have some intense desire to see this all the way through, scroll down to see the complete visiblity graph.*
+- *This animation clocks in at over 10 minutes, so you might want to refresh the page to watch the beginning. Also, if you don't have a particularly intense desire to see the animation all the way through, scroll down to see the complete visiblity graph.*
 
 | Color | Component |
 | --- | --- |
