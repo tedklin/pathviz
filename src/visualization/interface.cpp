@@ -53,7 +53,7 @@ void MarkerManager::Hide() {
 
 LineListManager::LineListManager(ros::Publisher* marker_pub,
                                  const std::string& name,
-                                 const LineListDescriptor& descriptor)
+                                 const LineDescriptor& descriptor)
     : MarkerManager(marker_pub, name), color_(descriptor.color_) {
   marker_.type = visualization_msgs::Marker::LINE_LIST;
   marker_.scale.x = descriptor.width_;
@@ -104,7 +104,7 @@ void LineListManager::Publish() {
 
 PointListManager::PointListManager(ros::Publisher* marker_pub,
                                    const std::string& name,
-                                   const PointListDescriptor& descriptor)
+                                   const PointDescriptor& descriptor)
     : MarkerManager(marker_pub, name), color_(descriptor.color_) {
   marker_.type = visualization_msgs::Marker::POINTS;
   marker_.scale.x = descriptor.size_;

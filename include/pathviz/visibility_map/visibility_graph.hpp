@@ -40,12 +40,12 @@ class Terrain {
 struct AnimationManager {
   AnimationManager(
       ros::Publisher* marker_pub, double update_rate_ms,
-      const visualization::PointListDescriptor& current_source_descriptor,
-      const visualization::PointListDescriptor& current_target_descriptor,
-      const visualization::LineListDescriptor& current_edge_descriptor,
-      const visualization::LineListDescriptor& active_edges_descriptor,
-      const visualization::LineListDescriptor& valid_edges_descriptor,
-      const visualization::LineListDescriptor& invalid_edges_descriptor);
+      const visualization::PointDescriptor& current_source_descriptor,
+      const visualization::PointDescriptor& current_target_descriptor,
+      const visualization::LineDescriptor& current_edge_descriptor,
+      const visualization::LineDescriptor& active_edges_descriptor,
+      const visualization::LineDescriptor& valid_edges_descriptor,
+      const visualization::LineDescriptor& invalid_edges_descriptor);
 
   ros::Publisher* marker_pub_;
   double update_rate_ms_;
@@ -60,7 +60,8 @@ std::set<geometry_2d::Point> get_visible_vertices(
     bool verbose = false, AnimationManager* animation_manager = nullptr);
 
 graphlib::Graph2d get_visibility_graph(
-    const Terrain& terrain, bool verbose = false,
+    const Terrain& terrain, const geometry_2d::Point& start,
+    const geometry_2d::Point& goal, bool verbose = false,
     AnimationManager* animation_manager = nullptr);
 
 }  // namespace visibility_map

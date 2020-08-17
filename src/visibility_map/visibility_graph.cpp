@@ -51,12 +51,12 @@ const geometry_2d::Polygon& Terrain::GetObstacle(
 
 AnimationManager::AnimationManager(
     ros::Publisher* marker_pub, double update_rate_ms,
-    const visualization::PointListDescriptor& current_source_descriptor,
-    const visualization::PointListDescriptor& current_target_descriptor,
-    const visualization::LineListDescriptor& current_edge_descriptor,
-    const visualization::LineListDescriptor& active_edges_descriptor,
-    const visualization::LineListDescriptor& valid_edges_descriptor,
-    const visualization::LineListDescriptor& invalid_edges_descriptor)
+    const visualization::PointDescriptor& current_source_descriptor,
+    const visualization::PointDescriptor& current_target_descriptor,
+    const visualization::LineDescriptor& current_edge_descriptor,
+    const visualization::LineDescriptor& active_edges_descriptor,
+    const visualization::LineDescriptor& valid_edges_descriptor,
+    const visualization::LineDescriptor& invalid_edges_descriptor)
     : marker_pub_(marker_pub), update_rate_ms_(update_rate_ms) {
   current_source_vertex_ = std::make_unique<visualization::PointListManager>(
       marker_pub, "current_source_vertex", current_source_descriptor);
@@ -340,10 +340,18 @@ std::set<geometry_2d::Point> get_visible_vertices(
   return visible_vertices;
 }
 
-graphlib::Graph2d get_visibility_graph(const Terrain& terrain, bool verbose,
+graphlib::Graph2d get_visibility_graph(const Terrain& terrain,
+                                       const geometry_2d::Point& start,
+                                       const geometry_2d::Point& goal,
+                                       bool verbose,
                                        AnimationManager* animation_manager) {
   graphlib::Graph2d graph(false);
-  for (const auto& point : terrain.AllVertices()) {
+
+  std::set<pathviz::geometry_2d::Point> all_vertices = terrain.AllVertices();
+  all_vertices.insert(start);
+  all_vertices.insert(goal);
+
+  for (const auto& point : all_vertices) {
     auto visible_vertices =
         get_visible_vertices(terrain, point, verbose, animation_manager);
     for (const auto& visible_vertex : visible_vertices) {

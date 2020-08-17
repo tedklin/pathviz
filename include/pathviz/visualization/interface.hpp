@@ -23,16 +23,16 @@ constexpr Color BLACK{0, 0, 0, 1}, RED{1, 0, 0, 1}, GREEN{0, 1, 0, 1},
     ORANGE{1, 0.5, 0, 1}, PURPLE{1, 0, 1, 1}, TRANSPARENT{0, 0, 0, 0.0000001};
 }  // namespace color
 
-struct LineListDescriptor {
-  LineListDescriptor(const Color& color, double width, double z)
+struct LineDescriptor {
+  LineDescriptor(const Color& color, double width, double z)
       : color_(color), width_(width), z_(z) {}
 
   Color color_;
   double width_, z_;
 };
 
-struct PointListDescriptor {
-  PointListDescriptor(const Color& color, double size, double z)
+struct PointDescriptor {
+  PointDescriptor(const Color& color, double size, double z)
       : color_(color), size_(size), z_(z) {}
 
   Color color_;
@@ -57,7 +57,7 @@ class MarkerManager {
 class LineListManager : public MarkerManager {
  public:
   LineListManager(ros::Publisher* marker_pub, const std::string& name,
-                  const LineListDescriptor& descriptor);
+                  const LineDescriptor& descriptor);
 
   void AddLine(const geometry_2d::LineSegment& line);
   void RemoveLine(const geometry_2d::LineSegment& line);
@@ -73,7 +73,7 @@ class LineListManager : public MarkerManager {
 class PointListManager : public MarkerManager {
  public:
   PointListManager(ros::Publisher* marker_pub, const std::string& name,
-                   const PointListDescriptor& descriptor);
+                   const PointDescriptor& descriptor);
 
   void AddPoint(const geometry_2d::Point& point);
   void RemovePoint(const geometry_2d::Point& point);
