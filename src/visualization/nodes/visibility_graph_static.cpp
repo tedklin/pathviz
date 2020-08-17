@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
   geometry_2d::Polygon p2({{-2, -0.7}, {-5.3, 0.8}, {-6, -1.8}, {-3.2, -2.3}});
   geometry_2d::Polygon p3({{2.7, 0.5}, {0, -2.7}, {5, -3}});
 
-  visibility_map::Terrain terrain({p1, p2, p3});
+  geometry_2d::Terrain terrain({p1, p2, p3});
 
   LineDescriptor terrain_descriptor(color::BLUE, 0.1, 0);
   publish_static_terrain(&marker_pub, terrain, terrain_descriptor);
@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
   graphlib::Graph2d vis_graph =
       visibility_map::get_visibility_graph(terrain, start, goal);
 
-  LineDescriptor graph_edge_descriptor(color::GREEN, 0.025, 0);
-  PointDescriptor graph_vertex_descriptor(color::PURPLE, 0.2, 0);
+  LineDescriptor graph_edge_descriptor(color::GREEN, 0.025, 0.02);
+  PointDescriptor graph_vertex_descriptor(color::PURPLE, 0.2, 0.04);
   publish_static_graph(&marker_pub, vis_graph, graph_vertex_descriptor,
                        graph_edge_descriptor);
 

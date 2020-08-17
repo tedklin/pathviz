@@ -18,7 +18,7 @@ void publish_static_point(ros::Publisher* marker_pub,
                           const PointDescriptor& point_descriptor);
 
 void publish_static_terrain(ros::Publisher* marker_pub,
-                            const visibility_map::Terrain& terrain,
+                            const geometry_2d::Terrain& terrain,
                             const LineDescriptor& line_descriptor);
 
 void publish_static_graph(ros::Publisher* marker_pub,

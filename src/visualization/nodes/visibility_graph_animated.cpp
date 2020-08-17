@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
   geometry_2d::Polygon p2({{-2, -0.7}, {-5.3, 0.8}, {-6, -1.8}, {-3.2, -2.3}});
   geometry_2d::Polygon p3({{2.7, 0.5}, {0, -2.7}, {5, -3}});
 
-  visibility_map::Terrain terrain({p1, p2, p3});
+  geometry_2d::Terrain terrain({p1, p2, p3});
   publish_static_terrain(&marker_pub, terrain, terrain_descriptor);
 
   geometry_2d::Point start{-7, 4};

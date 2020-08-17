@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <exception>
 #include <limits>
+#include <stdexcept>
 #include <utility>
 
 namespace pathviz {
@@ -178,6 +178,43 @@ std::pair<LineSegment, LineSegment> Polygon::IncidentEdges(Point from) const {
     LineSegment e2{from, *(iter + 1)};
     return std::pair<LineSegment, LineSegment>(e1, e2);
   }
+}
+
+Terrain::Terrain(std::vector<Polygon> obstacles) {
+  for (const auto& obstacle : obstacles) {
+    AddObstacle(obstacle);
+  }
+}
+
+void Terrain::AddObstacle(const Polygon& obstacle) {
+  for (const Point& p : obstacle.GetPolygon()) {
+    obstacle_index_.insert(std::make_pair(p, obstacles_.size()));
+  }
+  obstacles_.push_back(obstacle);
+}
+
+const std::vector<Polygon>& Terrain::AllObstacles() const { return obstacles_; }
+
+std::set<Point> Terrain::AllVertices() const {
+  std::set<Point> vertices;
+  for (const auto& obstacle : obstacles_) {
+    vertices.insert(obstacle.GetPolygon().cbegin(),
+                    obstacle.GetPolygon().cend());
+  }
+  return vertices;
+}
+
+int Terrain::GetObstacleIndex(const Point& vertex) const {
+  if (obstacle_index_.find(vertex) == obstacle_index_.end()) {
+    throw std::runtime_error(
+        "visibility_graph::Terrain error: tried to access a vertex that "
+        "doesn't exist");
+  }
+  return obstacle_index_.at(vertex);
+}
+
+const Polygon& Terrain::GetObstacle(const Point& vertex) const {
+  return obstacles_.at(GetObstacleIndex(vertex));
 }
 
 }  // namespace geometry_2d

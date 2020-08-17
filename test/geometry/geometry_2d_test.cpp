@@ -173,3 +173,14 @@ TEST(Geometry2d, PolygonTest) {
   EXPECT_TRUE((incident_edges.second == LineSegment{{1, 1}, {-1, 1}}));
   EXPECT_FALSE(incident_edges.first == incident_edges.second);
 }
+
+TEST(Geometry2d, TerrainTest) {
+  geometry_2d::Terrain terrain;
+  terrain.AddObstacle(geometry_2d::Polygon({{0, 0}, {3, 0}, {0, 4}}));
+  terrain.AddObstacle(
+      geometry_2d::Polygon({{-10, -10}, {-9, -10}, {-9, -9}, {-10, -9}}));
+
+  std::set<geometry_2d::Point> vertices{
+      {0, 0}, {3, 0}, {0, 4}, {-10, -10}, {-9, -10}, {-9, -9}, {-10, -9}};
+  EXPECT_EQ(vertices, terrain.AllVertices());
+}

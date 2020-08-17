@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
   geometry_2d::Point start{-7, 4};
   geometry_2d::Point goal{7, -2};
 
-  visibility_map::Terrain terrain({p1, p2, p3});
+  geometry_2d::Terrain terrain({p1, p2, p3});
   graphlib::Graph2d vis_graph =
       visibility_map::get_visibility_graph(terrain, start, goal);
 
@@ -69,4 +69,7 @@ int main(int argc, char** argv) {
                                      &animation_manager);
 
   publish_static_path(&marker_pub, path, found_path_descriptor);
+
+  ros::spin();
+  return 0;
 }

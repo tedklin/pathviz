@@ -1,11 +1,11 @@
 #pragma once
 
 #include <limits>
+#include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "graphlib/geometry/graph_2d.hpp"
 
 namespace pathviz {
 namespace geometry_2d {
@@ -116,9 +116,32 @@ class Polygon {
   std::vector<LineSegment> all_edges_;
   MinBoundingBox bounding_box_;
 };
-
 // TODO: overload equality operator for Polygon, taking into account possible
 // offset and wrap-around
+
+// Current implementation of Terrain assumes no obstacles overlap or share
+// common vertices.
+class Terrain {
+ public:
+  Terrain() = default;
+  Terrain(std::vector<Polygon> obstacles);
+
+  void AddObstacle(const Polygon& obstacle);
+
+  const std::vector<Polygon>& AllObstacles() const;
+  std::set<geometry_2d::Point> AllVertices() const;
+
+  int GetObstacleIndex(const Point& vertex) const;
+
+  const Polygon& GetObstacle(const Point& vertex) const;
+
+ private:
+  std::vector<Polygon> obstacles_;
+
+  // Zero-indexed map from vertices to the index in which its associated
+  // obstacle is stored in the obstacles_ vector.
+  std::map<Point, int> obstacle_index_;
+};
 
 }  // namespace geometry_2d
 }  // namespace pathviz

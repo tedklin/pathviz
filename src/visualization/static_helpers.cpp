@@ -16,7 +16,7 @@ void publish_static_point(ros::Publisher* marker_pub,
 
 static int terrain_index = 0;
 void publish_static_terrain(ros::Publisher* marker_pub,
-                            const visibility_map::Terrain& terrain,
+                            const geometry_2d::Terrain& terrain,
                             const LineDescriptor& line_descriptor) {
   LineListManager line_manager(
       marker_pub, "terrain" + std::to_string(terrain_index), line_descriptor);

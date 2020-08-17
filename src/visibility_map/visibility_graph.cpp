@@ -2,52 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
-#include <exception>
 #include <iostream>
 #include <map>
+#include <stdexcept>
 
 namespace pathviz {
 namespace visibility_map {
-
-Terrain::Terrain(std::vector<geometry_2d::Polygon> obstacles) {
-  for (const auto& obstacle : obstacles) {
-    AddObstacle(obstacle);
-  }
-}
-
-void Terrain::AddObstacle(const geometry_2d::Polygon& obstacle) {
-  for (const geometry_2d::Point& p : obstacle.GetPolygon()) {
-    obstacle_index_.insert(std::make_pair(p, obstacles_.size()));
-  }
-  obstacles_.push_back(obstacle);
-}
-
-const std::vector<geometry_2d::Polygon>& Terrain::AllObstacles() const {
-  return obstacles_;
-}
-
-std::set<geometry_2d::Point> Terrain::AllVertices() const {
-  std::set<geometry_2d::Point> vertices;
-  for (const auto& obstacle : obstacles_) {
-    vertices.insert(obstacle.GetPolygon().cbegin(),
-                    obstacle.GetPolygon().cend());
-  }
-  return vertices;
-}
-
-int Terrain::GetObstacleIndex(const geometry_2d::Point& vertex) const {
-  if (obstacle_index_.find(vertex) == obstacle_index_.end()) {
-    throw std::runtime_error(
-        "visibility_graph::Terrain error: tried to access a vertex that "
-        "doesn't exist");
-  }
-  return obstacle_index_.at(vertex);
-}
-
-const geometry_2d::Polygon& Terrain::GetObstacle(
-    const geometry_2d::Point& vertex) const {
-  return obstacles_.at(GetObstacleIndex(vertex));
-}
 
 AnimationManager::AnimationManager(
     ros::Publisher* marker_pub, double update_rate_ms,
@@ -74,7 +34,8 @@ AnimationManager::AnimationManager(
       marker_pub, "total_valid_edges", valid_edges_descriptor);
 }
 
-bool is_visible(const Terrain& terrain, const geometry_2d::Point& source,
+bool is_visible(const geometry_2d::Terrain& terrain,
+                const geometry_2d::Point& source,
                 const geometry_2d::Point& target,
                 const std::vector<geometry_2d::LineSegment>& active_edges) {
   // Test if target is part of the same polygon as the source. Try-catch is
@@ -135,8 +96,8 @@ bool is_visible(const Terrain& terrain, const geometry_2d::Point& source,
 // The implementation here sweeps counterclockwise starting from the negative
 // x-axis w.r.t. the source Point (natural ordering with atan2).
 std::set<geometry_2d::Point> get_visible_vertices(
-    const Terrain& terrain, const geometry_2d::Point& source, bool verbose,
-    AnimationManager* animation_manager) {
+    const geometry_2d::Terrain& terrain, const geometry_2d::Point& source,
+    bool verbose, AnimationManager* animation_manager) {
   if (animation_manager) {
     animation_manager->current_source_vertex_->AddPoint(source);
     animation_manager->current_source_vertex_->Publish();
@@ -351,7 +312,7 @@ std::set<geometry_2d::Point> get_visible_vertices(
   return visible_vertices;
 }
 
-graphlib::Graph2d get_visibility_graph(const Terrain& terrain,
+graphlib::Graph2d get_visibility_graph(const geometry_2d::Terrain& terrain,
                                        const geometry_2d::Point& start,
                                        const geometry_2d::Point& goal,
                                        bool verbose,
