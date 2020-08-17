@@ -2,10 +2,6 @@
 
 #include <ros/ros.h>
 
-#include <geometry_msgs/Point.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
-
 #include "pathviz/visualization/interface.hpp"
 #include "pathviz/visualization/visibility_graph_helper.hpp"
 
@@ -13,7 +9,7 @@ using namespace pathviz;
 using namespace pathviz::visualization;
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "visibility_graph_node");
+  ros::init(argc, argv, "visibility_graph_static");
   ros::NodeHandle n;
 
   ros::Publisher marker_pub =
