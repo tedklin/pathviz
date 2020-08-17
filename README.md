@@ -1,10 +1,14 @@
 # pathviz
 
-This project aims to serve as a growing hub for concrete implementations and intuitive visualizations of classic algorithms related to path planning. 
+This project aims to serve as a growing collection for concrete implementations and intuitive visualizations of classic algorithms related to path planning.
 
-The algorithms implemented here have been covered thoroughly in literature, as well as in various motion / path planning courses whose material is freely available online. In particular, ***Principles of Robot Motion (Choset, et al)*** and ***Computational Geometry (de Berg, et al)*** served as my primary reference texts.
+## About
 
-*pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. At most, each algorithm will come with a brief snippet of pseudocode to remind readers of what it does. Complete information can be found in the aforementioned books.
+The algorithms implemented here have been covered thoroughly in literature, as well as in various motion / path planning courses whose material is freely available online. In particular, ***Principles of Robot Motion (Choset, et al)*** and ***Computational Geometry (de Berg, et al)*** served as my primary self-study reference texts.
+
+*pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. At most, each algorithm shown below will come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
+
+A secondary goal of *pathviz* is to provide usable implementations for each algorithm. The project has been designed such that it's easy to add visualization to an existing algorithm function in a way that doesn't impact the underlying runtime speed too much. This flexibility might come at the expense of readability, as functions containing both underlying algorithm logic and visualization instructions can get pretty long.
 
 ## Dependencies
 
@@ -12,8 +16,14 @@ The algorithms implemented here have been covered thoroughly in literature, as w
 - rviz
 - [graphlib](https://github.com/tedklin/back-to-basics/tree/master/algorithms/graphlib) (A separate library I wrote for more general fundamental graph theory)
 
-ROS launch files that run the visualizations automatically are included.
+## Usage
 
+To run existing visualizations, simply build the project in a ROS catkin workspace and launch the desired roslaunch file located [here](https://github.com/tedklin/pathviz/tree/master/launch)!
+
+If you want to build your own visualizations, the project includes a small interface for animating [rviz Markers](http://wiki.ros.org/rviz/DisplayTypes/Marker).
+
+
+## The algorithms:
 
 ## Lee's rotational plane sweep algorithm
 
