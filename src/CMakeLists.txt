@@ -4,9 +4,11 @@
 
 list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/geometry/geometry_2d.cpp")
 list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visualization/interface.cpp")
+list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visualization/static_helpers.cpp")
 
 list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visibility_map/visibility_graph.cpp")
-list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visualization/visibility_graph_helper.cpp")
+
+list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/graph_search/pathfinder.cpp")
 # ^^^ APPEND NEW LIBRARY SOURCE FILES TO THE SOURCE_LIST
 
 # Make an automatic library - will be static or dynamic based on user setting
