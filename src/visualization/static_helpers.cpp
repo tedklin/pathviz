@@ -55,5 +55,26 @@ void publish_static_graph(ros::Publisher* marker_pub,
   ++graph_index;
 }
 
+static int path_index = 0;
+void publish_static_path(ros::Publisher* marker_pub,
+                         std::stack<const graphlib::Vertex2d*> path,
+                         const LineDescriptor& line_descriptor) {
+  LineListManager line_manager(marker_pub, "found_path" + path_index,
+                               line_descriptor);
+  if (path.size() >= 2) {
+    auto v1 = path.top();
+    path.pop();
+
+    while (!path.empty()) {
+      auto v2 = path.top();
+      path.pop();
+      line_manager.AddLine({{v1->x_, v1->y_}, {v2->x_, v2->y_}});
+      v1 = v2;
+    }
+  }
+  line_manager.Publish();
+  ++path_index;
+}
+
 }  // namespace visualization
 }  // namespace pathviz

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stack>
+
 #include <ros/ros.h>
 
 #include "graphlib/geometry/graph_2d.hpp"
@@ -23,6 +25,10 @@ void publish_static_graph(ros::Publisher* marker_pub,
                           const graphlib::Graph2d& graph,
                           const PointDescriptor& point_descriptor,
                           const LineDescriptor& line_descriptor);
+
+void publish_static_path(ros::Publisher* marker_pub,
+                         std::stack<const graphlib::Vertex2d*> path,
+                         const LineDescriptor& line_descriptor);
 
 }  // namespace visualization
 }  // namespace pathviz
