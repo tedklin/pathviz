@@ -1,4 +1,4 @@
-#include "pathviz/graph_search/pathfinder.hpp"
+#include "pathviz/graph_search/a_star.hpp"
 
 #include <ros/ros.h>
 

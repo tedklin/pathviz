@@ -1,7 +1,7 @@
 // Adapted from the implementation of Dijkstra's algorithm in
 // graphlib/algo/weighted_paths.cpp.
 
-#include "pathviz/graph_search/pathfinder.hpp"
+#include "pathviz/graph_search/a_star.hpp"
 
 #include <algorithm>
 #include <iostream>

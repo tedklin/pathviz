@@ -8,7 +8,7 @@ list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visualization/static_helpers.
 
 list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/visibility_map/visibility_graph.cpp")
 
-list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/graph_search/pathfinder.cpp")
+list(APPEND SOURCE_LIST "${PROJECT_SOURCE_DIR}/src/graph_search/a_star.cpp")
 # ^^^ APPEND NEW LIBRARY SOURCE FILES TO THE SOURCE_LIST
 
 # Make an automatic library - will be static or dynamic based on user setting
