@@ -72,6 +72,11 @@ double x_intercept(const LineSegment& e) {
 
 // TODO: find ways to make this more numerically robust!
 bool is_intersecting(const LineSegment& e1, const LineSegment& e2) {
+  if (e1.from == e2.from || e1.from == e2.to || e1.to == e2.from ||
+      e1.to == e2.to) {
+    return false;
+  }
+
   if (is_vertical(e1) && is_vertical(e2)) {
     return false;  // colinear
   } else if (is_vertical(e1)) {
