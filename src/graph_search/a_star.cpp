@@ -54,9 +54,7 @@ std::stack<const Vertex2d*> get_path(Graph2d* graph,
 // root.
 std::map<const Vertex2d*, double> dist_to_root;
 
-std::stack<const graphlib::Vertex2d*> a_star(
-    Graph2d* graph, const Vertex2d* search_root, const Vertex2d* destination,
-    double heuristic_multiplier, AnimationManager* animation_manager) {
+void setup_dist_to_root(Graph2d* graph, const Vertex2d* search_root) {
   dist_to_root.clear();
   for (const auto& v : graph->GetAdjacencyMap()) {
     if (v.first == search_root) {
@@ -66,6 +64,12 @@ std::stack<const graphlib::Vertex2d*> a_star(
           std::numeric_limits<double>::infinity();
     }
   }
+}
+
+std::stack<const graphlib::Vertex2d*> a_star(
+    Graph2d* graph, const Vertex2d* search_root, const Vertex2d* destination,
+    double heuristic_multiplier, AnimationManager* animation_manager) {
+  setup_dist_to_root(graph, search_root);
 
   auto heuristic = [&destination](const Vertex2d* v) -> double {
     // Euclidean distance heuristic.
@@ -84,6 +88,7 @@ std::stack<const graphlib::Vertex2d*> a_star(
 
   std::vector<const Vertex2d*> min_heap;
   min_heap.push_back(search_root);
+
   if (animation_manager) {
     animation_manager->fringe_->AddPoint({search_root->x_, search_root->y_});
     animation_manager->fringe_->Publish();
@@ -94,6 +99,7 @@ std::stack<const graphlib::Vertex2d*> a_star(
     std::pop_heap(min_heap.begin(), min_heap.end(), pq_ordering);
     const Vertex2d* v1 = min_heap.back();
     min_heap.pop_back();
+
     if (animation_manager) {
       animation_manager->fringe_->RemovePoint({v1->x_, v1->y_});
       animation_manager->fringe_->Publish();
@@ -132,7 +138,6 @@ std::stack<const graphlib::Vertex2d*> a_star(
         }
       }
     }
-
     if (animation_manager) {
       animation_manager->fringe_->Publish();
       animation_manager->relaxed_edges_->Publish();

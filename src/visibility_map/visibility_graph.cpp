@@ -91,22 +91,11 @@ bool is_visible(const geometry_2d::Terrain& terrain,
   return true;
 }
 
-// TODO: break up this behemoth function into smaller parts
-// Lee's rotational plane sweep algorithm.
+// Sort all non-source Points by sweep order.
 // The implementation here sweeps counterclockwise starting from the negative
 // x-axis w.r.t. the source Point (natural ordering with atan2).
-std::set<geometry_2d::Point> get_visible_vertices(
-    const geometry_2d::Terrain& terrain, const geometry_2d::Point& source,
-    bool verbose, AnimationManager* animation_manager) {
-  if (animation_manager) {
-    animation_manager->current_source_vertex_->AddPoint(source);
-    animation_manager->current_source_vertex_->Publish();
-    visualization::sleep_ms(animation_manager->update_rate_ms_);
-  }
-
-  std::set<geometry_2d::Point> visible_vertices;
-
-  // Sort all non-source Points by sweep order.
+std::map<double, std::vector<geometry_2d::Point>> sort_sweep_points(
+    const geometry_2d::Terrain& terrain, const geometry_2d::Point& source) {
   std::map<double, std::vector<geometry_2d::Point>> ordered_points;
   for (const auto& point : terrain.AllVertices()) {
     double angle = geometry_2d::angle_from_horizontal(source, point);
@@ -118,7 +107,48 @@ std::set<geometry_2d::Point> get_visible_vertices(
       }
     }
   }
+  return ordered_points;
+}
 
+// Initialize container for edges currrently crossed by our sweep line. The
+// order of the Points of each edge in this container matters (same direction
+// as ccw sweep).
+std::vector<geometry_2d::LineSegment> initialize_active_edges(
+    const geometry_2d::Terrain& terrain, const geometry_2d::Point& source) {
+  std::vector<geometry_2d::LineSegment> active_edges;
+  for (const auto& polygon : terrain.AllObstacles()) {
+    for (const auto& edge : polygon.AllEdges()) {
+      // If intersecting negative x-axis w.r.t. source point (the start of the
+      // sweep), then add to initial active edges.
+      if (!geometry_2d::is_horizontal(edge) &&
+          std::max(edge.from.x, edge.to.x) < source.x &&
+          std::max(edge.from.y, edge.to.y) > source.y &&
+          std::min(edge.from.y, edge.to.y) < source.y) {
+        // Ensure the edge we add is pointing downwards (ccw).
+        if (edge.from.y > edge.to.y) {
+          active_edges.push_back(edge);
+        } else {
+          active_edges.push_back(geometry_2d::reverse(edge));
+        }
+      }
+    }
+  }
+  return active_edges;
+}
+
+// Lee's rotational plane sweep algorithm.
+std::set<geometry_2d::Point> get_visible_vertices(
+    const geometry_2d::Terrain& terrain, const geometry_2d::Point& source,
+    bool verbose, AnimationManager* animation_manager) {
+  if (animation_manager) {
+    animation_manager->current_source_vertex_->AddPoint(source);
+    animation_manager->current_source_vertex_->Publish();
+    visualization::sleep_ms(animation_manager->update_rate_ms_);
+  }
+
+  std::set<geometry_2d::Point> visible_vertices;
+
+  auto ordered_points = sort_sweep_points(terrain, source);
   if (verbose) {
     std::cout << "========================\n";
     std::cout << "source vertex: " << geometry_2d::to_string(source) << '\n';
@@ -134,28 +164,7 @@ std::set<geometry_2d::Point> get_visible_vertices(
     std::cout << '\n';
   }
 
-  // Initialize container for edges currrently crossed by our sweep line. The
-  // order of the Points of each edge in this container matters (same direction
-  // as ccw sweep).
-  std::vector<geometry_2d::LineSegment> active_edges;
-  for (const auto& polygon : terrain.AllObstacles()) {
-    for (const auto& edge : polygon.AllEdges()) {
-      // If intersecting negative x-axis w.r.t. source point, then add to
-      // initial active edges.
-      if (!geometry_2d::is_horizontal(edge) &&
-          std::max(edge.from.x, edge.to.x) < source.x &&
-          std::max(edge.from.y, edge.to.y) > source.y &&
-          std::min(edge.from.y, edge.to.y) < source.y) {
-        // Ensure the edge we add is pointing downwards (ccw).
-        if (edge.from.y > edge.to.y) {
-          active_edges.push_back(edge);
-        } else {
-          active_edges.push_back(geometry_2d::reverse(edge));
-        }
-      }
-    }
-  }
-
+  auto active_edges = initialize_active_edges(terrain, source);
   if (verbose) {
     std::cout << "initial active edges (negative x-axis):\n";
     for (const auto& edge : active_edges) {
@@ -309,6 +318,7 @@ std::set<geometry_2d::Point> get_visible_vertices(
     animation_manager->valid_edges_->Clear();
     animation_manager->valid_edges_->Publish();
   }
+
   return visible_vertices;
 }
 
