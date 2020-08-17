@@ -15,12 +15,15 @@ AnimationManager::AnimationManager(
     ros::Publisher* marker_pub, double update_rate_ms,
     const visualization::PointDescriptor& fringe_descriptor,
     const visualization::PointDescriptor& current_vertex_descriptor,
+    const visualization::PointDescriptor& relaxed_vertices_descriptor,
     const visualization::LineDescriptor& relaxed_edges_descriptor)
     : marker_pub_(marker_pub), update_rate_ms_(update_rate_ms) {
   fringe_ = std::make_unique<visualization::PointListManager>(
       marker_pub, "fringe", fringe_descriptor);
   current_vertex_ = std::make_unique<visualization::PointListManager>(
       marker_pub, "current_vertex", current_vertex_descriptor);
+  relaxed_vertices_ = std::make_unique<visualization::PointListManager>(
+      marker_pub, "relaxed_vertices", relaxed_vertices_descriptor);
   relaxed_edges_ = std::make_unique<visualization::LineListManager>(
       marker_pub, "relaxed_edges", relaxed_edges_descriptor);
 }
@@ -101,6 +104,9 @@ std::stack<const graphlib::Vertex2d*> a_star(
     if (animation_manager) {
       animation_manager->fringe_->RemovePoint({v1->x_, v1->y_});
       animation_manager->fringe_->Publish();
+
+      animation_manager->relaxed_vertices_->AddPoint({v1->x_, v1->y_});
+      animation_manager->relaxed_vertices_->Publish();
 
       animation_manager->current_vertex_->Clear();
       animation_manager->current_vertex_->AddPoint({v1->x_, v1->y_});

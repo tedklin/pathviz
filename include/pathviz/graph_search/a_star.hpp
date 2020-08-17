@@ -14,6 +14,7 @@ struct AnimationManager {
       ros::Publisher* marker_pub, double update_rate_ms,
       const visualization::PointDescriptor& fringe_descriptor,
       const visualization::PointDescriptor& current_vertex_descriptor,
+      const visualization::PointDescriptor& relaxed_vertices_descriptor,
       const visualization::LineDescriptor& relaxed_edges_descriptor);
 
   ros::Publisher* marker_pub_;
