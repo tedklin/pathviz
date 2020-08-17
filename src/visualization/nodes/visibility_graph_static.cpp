@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
   visibility_map::Terrain terrain({p1, p2, p3});
 
-  LineDescriptor terrain_descriptor(color::BLUE, 0.05, 0.02);
+  LineDescriptor terrain_descriptor(color::BLUE, 0.1, 0);
   publish_static_terrain(&marker_pub, terrain, terrain_descriptor);
 
   geometry_2d::Point start{-7, 4};

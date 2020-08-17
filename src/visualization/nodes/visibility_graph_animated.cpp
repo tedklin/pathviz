@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
   publish_static_point(&marker_pub, goal, endpoint_descriptor);
 
   graphlib::Graph2d vis_graph = visibility_map::get_visibility_graph(
-      terrain, start, goal, false, &animation_manager);
+      terrain, start, goal, true, &animation_manager);
 
   LineDescriptor graph_edge_descriptor(color::GREEN, 0.025, -0.02);
   PointDescriptor graph_vertex_descriptor(color::PURPLE, 0.2, 0);
