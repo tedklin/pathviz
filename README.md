@@ -6,10 +6,13 @@ The algorithms implemented here have been covered thoroughly in literature, as w
 
 *pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. At most, each algorithm will come with a brief snippet of pseudocode to remind readers of what it does. Complete information can be found in the aforementioned books.
 
-Dependencies:
+## Dependencies
+
 - ROS Melodic
 - rviz
 - [graphlib](https://github.com/tedklin/back-to-basics/tree/master/algorithms/graphlib) (A separate library I wrote for more general fundamental graph theory)
+
+ROS launch files that run the visualizations automatically are included.
 
 
 ## Lee's rotational plane sweep algorithm
