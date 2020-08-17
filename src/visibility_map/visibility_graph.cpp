@@ -159,6 +159,8 @@ std::set<geometry_2d::Point> get_visible_vertices(
   }
 
   if (verbose) {
+    std::cout << "========================\n";
+    std::cout << "source vertex: " << geometry_2d::to_string(source) << '\n';
     std::cout << "sweep order:\n";
     for (const auto& angle : ordered_points) {
       std::cout << "points at angle " << std::to_string(angle.first)
@@ -177,9 +179,10 @@ std::set<geometry_2d::Point> get_visible_vertices(
   std::vector<geometry_2d::LineSegment> active_edges;
   for (const auto& polygon : terrain.AllObstacles()) {
     for (const auto& edge : polygon.AllEdges()) {
-      // If intersecting negative x-axis, then add to initial active edges.
+      // If intersecting negative x-axis w.r.t. source point, then add to
+      // initial active edges.
       if (!geometry_2d::is_horizontal(edge) &&
-          geometry_2d::x_intercept(edge) < source.x &&
+          std::max(edge.from.x, edge.to.x) < source.x &&
           std::max(edge.from.y, edge.to.y) > source.y &&
           std::min(edge.from.y, edge.to.y) < source.y) {
         // Ensure the edge we add is pointing downwards (ccw).
@@ -222,6 +225,9 @@ std::set<geometry_2d::Point> get_visible_vertices(
                            // already known to be not visible, we can skip the
                            // usual visibility check
     for (const auto& point : colinear_points) {
+      if (verbose) {
+        std::cout << "processing " << geometry_2d::to_string(point) << ":\n";
+      }
       if (animation_manager) {
         animation_manager->current_target_vertex_->Clear();
         animation_manager->current_target_vertex_->AddPoint(point);
@@ -237,6 +243,9 @@ std::set<geometry_2d::Point> get_visible_vertices(
       if (!blocked && is_visible(terrain, source, point, active_edges)) {
         visible_vertices.insert(point);
 
+        if (verbose) {
+          std::cout << "VISIBLE!\n";
+        }
         if (animation_manager) {
           animation_manager->total_valid_edges_->AddLine({source, point});
           animation_manager->valid_edges_->AddLine({source, point});
@@ -245,6 +254,9 @@ std::set<geometry_2d::Point> get_visible_vertices(
       } else {
         blocked = true;
 
+        if (verbose) {
+          std::cout << "NOT VISIBLE!\n";
+        }
         if (animation_manager) {
           animation_manager->invalid_edges_->AddLine({source, point});
           animation_manager->invalid_edges_->Publish();
@@ -292,11 +304,6 @@ std::set<geometry_2d::Point> get_visible_vertices(
         active_edges.push_back(incident_edges.second);
       }
 
-      if (animation_manager) {
-        animation_manager->active_edges_->Publish();
-        visualization::sleep_ms(animation_manager->update_rate_ms_);
-      }
-
       if (verbose) {
         std::cout << "active edges after processing "
                   << geometry_2d::to_string(point) << ":\n";
@@ -304,6 +311,10 @@ std::set<geometry_2d::Point> get_visible_vertices(
           std::cout << geometry_2d::to_string(edge) << '\n';
         }
         std::cout << '\n';
+      }
+      if (animation_manager) {
+        animation_manager->active_edges_->Publish();
+        visualization::sleep_ms(animation_manager->update_rate_ms_);
       }
     }
   }
