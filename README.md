@@ -18,12 +18,14 @@ A secondary goal of *pathviz* is to provide usable implementations for each algo
 
 ## Usage
 
-To run existing visualizations, simply build the project in a ROS catkin workspace and launch the desired roslaunch file located [here](https://github.com/tedklin/pathviz/tree/master/launch)!
+To run existing visualizations, simply build *pathviz* in a ROS catkin workspace and launch the desired roslaunch file located [here](https://github.com/tedklin/pathviz/tree/master/launch)!
 
-If you want to build your own visualizations, the project includes a small interface for animating [rviz Markers](http://wiki.ros.org/rviz/DisplayTypes/Marker).
+If you want to build your own visualizations, *pathviz* includes a small interface for animating [rviz Markers](http://wiki.ros.org/rviz/DisplayTypes/Marker).
+
+Animation speeds can be tuned according to preference. If it wasn't obvious, it should be noted that the animations below don't reflect the actual wall clock running speed of the algorithm. I've considered integrating rosparam files for easier and faster iteration, but I haven't implemented that yet.
 
 
-## The algorithms:
+## The Algorithms:
 
 ## Lee's rotational plane sweep algorithm
 
@@ -39,7 +41,7 @@ If you want to build your own visualizations, the project includes a small inter
 
 *Side notes:*
 - *The implementation here sweeps counterclockwise starting at the negative x-axis w.r.t. the current source vertex.*
-- *This animation clocks in at over 10 minutes, so you might want to refresh the page to watch the beginning. Also, if you don't have a particularly intense desire to see the animation all the way through, scroll down to see the complete visiblity graph.*
+- *This animation clocks in at over 10 minutes in full, so you might want to refresh the page to watch the beginning. Also, if you don't have a particularly intense desire to see the animation all the way through, scroll down to see the complete visiblity graph.*
 
 | Color | Component |
 | --- | --- |
