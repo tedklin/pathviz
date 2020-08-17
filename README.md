@@ -8,7 +8,7 @@ The algorithms implemented here have been covered thoroughly in literature, as w
 
 *pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. At most, each algorithm shown below will come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
 
-A secondary goal of *pathviz* is to provide usable implementations for each algorithm. The project has been designed such that it's easy to add visualization to an existing algorithm function in a way that doesn't impact the underlying runtime speed too much. This flexibility might come at the expense of readability, as functions containing both underlying algorithm logic and visualization instructions can get pretty long.
+A secondary goal of *pathviz* is to provide usable implementations for each algorithm. The project has been designed such that it's easy to add visualization to an existing algorithm function implementation in a way that doesn't impact the underlying runtime speed too much. This flexibility might come at the expense of readability, as functions containing both underlying algorithm logic and visualization instructions can get pretty long.
 
 ## Dependencies
 
@@ -25,7 +25,7 @@ If you want to build your own visualizations, *pathviz* includes a small interfa
 Animation speeds can be tuned according to preference. If it wasn't obvious, it should be noted that the animations below don't reflect the actual wall clock running speed of the algorithm. I've considered integrating rosparam files for easier and faster iteration, but I haven't implemented that yet.
 
 
-## The Algorithms:
+## Visualization collection:
 
 ## Lee's rotational plane sweep algorithm
 
