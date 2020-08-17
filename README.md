@@ -6,7 +6,7 @@ This project aims to serve as a growing collection for concrete implementations 
 
 The algorithms implemented here have been covered thoroughly in literature, as well as in various motion / path planning courses whose material is freely available online. In particular, ***Principles of Robot Motion (Choset, et al)*** and ***Computational Geometry (de Berg, et al)*** are my current self-study reference texts.
 
-*pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. At most, each algorithm shown below will come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
+*pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. At most, each algorithm shown in the "Visualization collection" below will come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
 
 A secondary goal of *pathviz* is to provide usable implementations for each algorithm. The project has been designed such that it's easy to add visualization to an existing algorithm function implementation in a way that doesn't impact the underlying runtime speed too much. This flexibility might come at the expense of readability, as functions containing both underlying algorithm logic and visualization instructions can get pretty long.
 
