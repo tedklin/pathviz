@@ -78,7 +78,7 @@ Animation speeds can be tuned according to preference. If it wasn't obvious, it 
 | yellow | static start and goal points |
 | green | current vertex being expanded / relaxed |
 | blue points | relaxed vertices |
-| blue lines | currently-known best path from start point to a relaxed vertex (relaxed edges) |
+| blue lines | *currently-known* best path from start point to a relaxed vertex |
 | orange | priority queue of vertices to relax next (fringe) |
 
 #### Dijkstra's algorithm

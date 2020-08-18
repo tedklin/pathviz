@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
   publish_static_point(&marker_pub, start, endpoint_descriptor);
   publish_static_point(&marker_pub, goal, endpoint_descriptor);
 
+  // No AnimationManager pointer passed in, so won't run animated visualization.
   graphlib::Graph2d vis_graph =
       visibility_map::get_visibility_graph(terrain, start, goal);
 

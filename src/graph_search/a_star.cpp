@@ -94,7 +94,7 @@ std::stack<const graphlib::Vertex2d*> a_star(
   if (animation_manager) {
     animation_manager->fringe_->AddPoint({search_root->x_, search_root->y_});
     animation_manager->fringe_->Publish();
-    visualization::sleep_ms(animation_manager->update_rate_ms_);
+    visualization::sleep_ms(animation_manager->update_rate_ms_ * 2);
   }
 
   while (!min_heap.empty()) {
@@ -111,7 +111,7 @@ std::stack<const graphlib::Vertex2d*> a_star(
       animation_manager->current_vertex_->Clear();
       animation_manager->current_vertex_->AddPoint({v1->x_, v1->y_});
       animation_manager->current_vertex_->Publish();
-      visualization::sleep_ms(animation_manager->update_rate_ms_);
+      visualization::sleep_ms(animation_manager->update_rate_ms_ * 2);
     }
 
     if (v1 == destination) break;
@@ -143,6 +143,9 @@ std::stack<const graphlib::Vertex2d*> a_star(
     if (animation_manager) {
       animation_manager->fringe_->Publish();
       animation_manager->relaxed_edges_->Publish();
+
+      animation_manager->current_vertex_->Clear();
+      animation_manager->current_vertex_->Publish();
       visualization::sleep_ms(animation_manager->update_rate_ms_);
     }
   }
@@ -154,9 +157,13 @@ std::stack<const graphlib::Vertex2d*> a_star(
     animation_manager->current_vertex_->Clear();
     animation_manager->current_vertex_->Publish();
 
-    animation_manager->relaxed_edges_->Clear();
-    animation_manager->relaxed_edges_->Publish();
-    visualization::sleep_ms(animation_manager->update_rate_ms_);
+    visualization::sleep_ms(1000);
+
+    // animation_manager->relaxed_edges_->Clear();
+    // animation_manager->relaxed_edges_->Publish();
+
+    // animation_manager->relaxed_vertices_->Clear();
+    // animation_manager->relaxed_vertices_->Publish();
   }
 
   return get_path(graph, search_root, destination);

@@ -24,21 +24,10 @@ int main(int argc, char** argv) {
     sleep(1);
   }
 
+  // First set up static terrain on which we run Lee's algorithm.
+
   LineDescriptor terrain_descriptor(color::BLUE, 0.05, 0);
   PointDescriptor endpoint_descriptor(color::YELLOW, 0.2, 0.04);
-  PointDescriptor current_source_descriptor(color::PURPLE, 0.2, 0.04);
-  PointDescriptor current_target_descriptor(color::ORANGE, 0.2, 0.04);
-  LineDescriptor current_edge_descriptor(color::ORANGE, 0.03, 0.02);
-  LineDescriptor active_edges_descriptor(color::RED, 0.05, 0.02);
-  LineDescriptor valid_edges_descriptor(color::GREEN, 0.05, 0.04);
-  LineDescriptor invalid_edges_descriptor(color::BLACK, 0.05, 0.04);
-
-  double update_rate_ms = 1000;
-  visibility_map::AnimationManager animation_manager(
-      &marker_pub, update_rate_ms, current_source_descriptor,
-      current_target_descriptor, current_edge_descriptor,
-      active_edges_descriptor, valid_edges_descriptor,
-      invalid_edges_descriptor);
 
   geometry_2d::Polygon p1(
       {{0, 0}, {0.5, 3}, {-0.7, 4.8}, {-4, 3.7}, {-3.3, 1.5}, {-1.5, 2.5}});
@@ -52,6 +41,24 @@ int main(int argc, char** argv) {
   geometry_2d::Point goal{7, -2};
   publish_static_point(&marker_pub, start, endpoint_descriptor);
   publish_static_point(&marker_pub, goal, endpoint_descriptor);
+
+  visualization::sleep_ms(3000);
+
+  // Run Lee's algorithm.
+
+  PointDescriptor current_source_descriptor(color::PURPLE, 0.2, 0.04);
+  PointDescriptor current_target_descriptor(color::ORANGE, 0.2, 0.04);
+  LineDescriptor current_edge_descriptor(color::ORANGE, 0.03, 0.02);
+  LineDescriptor active_edges_descriptor(color::RED, 0.05, 0.02);
+  LineDescriptor valid_edges_descriptor(color::GREEN, 0.05, 0.04);
+  LineDescriptor invalid_edges_descriptor(color::BLACK, 0.05, 0.04);
+
+  double update_rate_ms = 1000;
+  visibility_map::AnimationManager animation_manager(
+      &marker_pub, update_rate_ms, current_source_descriptor,
+      current_target_descriptor, current_edge_descriptor,
+      active_edges_descriptor, valid_edges_descriptor,
+      invalid_edges_descriptor);
 
   graphlib::Graph2d vis_graph = visibility_map::get_visibility_graph(
       terrain, start, goal, true, &animation_manager);
