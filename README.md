@@ -4,11 +4,11 @@ This project aims to serve as a growing collection for concrete implementations 
 
 ## About
 
-The algorithms implemented here have been covered thoroughly in literature, as well as in various motion / path planning courses whose material is freely available online. In particular, ***Principles of Robot Motion (Choset, et al)*** and ***Computational Geometry (de Berg, et al)*** are my current self-study reference texts.
+The algorithms that have been / will be implemented here have been covered thoroughly in literature, as well as in various motion / path planning courses whose material is freely available online. In particular, ***Principles of Robot Motion (Choset, et al)*** and ***Computational Geometry (de Berg, et al)*** are my current self-study reference texts.
 
-*pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. At most, each algorithm shown in the "Visualization collection" below will come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
+*pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. Each algorithm shown in the "Visualization collection" below will at most come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
 
-A secondary goal of *pathviz* is to provide usable implementations for each algorithm. The project has been designed such that it's easy to add visualization to an existing algorithm function implementation in a way that doesn't impact the underlying runtime speed too much. This flexibility might come at the expense of readability, as functions containing both underlying algorithm logic and visualization instructions can get pretty long.
+A secondary goal of *pathviz* is to provide usable implementations for each algorithm. The project has been designed such that added visualization to an existing algorithm function implementation doesn't impact the underlying algorithm runtime speed too much. However, this flexibility might come at the expense of code readability, as function implementations containing both underlying algorithm logic and visualization instructions can get pretty long.
 
 ## Dependencies
 
@@ -18,11 +18,11 @@ A secondary goal of *pathviz* is to provide usable implementations for each algo
 
 ## Usage
 
-To run existing visualizations, simply build *pathviz* in a ROS catkin workspace and launch the desired roslaunch file located [here](https://github.com/tedklin/pathviz/tree/master/launch)!
+To run existing visualizations on your own device, simply download and build *pathviz* in a ROS catkin workspace and launch the desired roslaunch file located [here](https://github.com/tedklin/pathviz/tree/master/launch)!
 
-If you want to build your own visualizations, *pathviz* includes a small interface for animating [rviz Markers](http://wiki.ros.org/rviz/DisplayTypes/Marker).
+If you want to build your own visualizations, *pathviz* provides a small [interface](https://github.com/tedklin/pathviz/tree/master/include/pathviz/visualization) for animating [rviz Markers](http://wiki.ros.org/rviz/DisplayTypes/Marker).
 
-Animation speeds can be tuned according to preference. If it wasn't obvious, it should be noted that the animations below don't reflect the actual wall clock running speed of the algorithm. I've considered integrating rosparam files for easier and faster iteration, but I haven't implemented that yet.
+Animation speeds can be tuned according to preference. If it wasn't obvious, it should be noted that the animations below don't reflect the actual wall clock running speed of the algorithm. I'm considering setting up rosparam files for easier adjustment of animation speeds and colors, but I haven't started implementing that yet.
 
 
 ## Visualization collection:
@@ -41,7 +41,7 @@ Animation speeds can be tuned according to preference. If it wasn't obvious, it 
 
 *Side notes:*
 - *The implementation here sweeps counterclockwise starting at the negative x-axis w.r.t. the current source vertex.*
-- *This animation clocks in at over 10 minutes in full, so you might want to refresh the page to watch the beginning. Also, if you don't have a particularly intense desire to see the animation all the way through, scroll down to see the complete visiblity graph.*
+- *This animation clocks in at over 10 minutes in full, so you might want to refresh the page to watch the beginning. If you don't have a particularly intense desire to watch the animation all the way through, scroll down further to see the complete visiblity graph.*
 
 | Color | Component |
 | --- | --- |
@@ -75,11 +75,12 @@ Animation speeds can be tuned according to preference. If it wasn't obvious, it 
 | Color | Component |
 | --- | --- |
 | black | static Euclidean graph |
-| yellow | static start and goal points |
+| yellow points | static start and goal points |
 | green | current vertex being expanded / relaxed |
 | blue points | relaxed vertices |
 | blue lines | *currently-known* best path from start point to a relaxed vertex |
-| orange | priority queue of vertices to relax next (fringe) |
+| orange | priority queue of vertices to relax next ("fringe") |
+| yellow line | final found path from start to goal points |
 
 #### Dijkstra's algorithm
 
