@@ -6,9 +6,7 @@ This project aims to serve as a growing collection for concrete implementations 
 
 The algorithms that have been / will be implemented here have been covered thoroughly in literature, as well as in various motion / path planning courses whose material is freely available online. In particular, ***Principles of Robot Motion (Choset, et al)*** and ***Computational Geometry (de Berg, et al)*** are my current self-study reference texts.
 
-*pathviz* is not intended to be a standalone reference; instead it focuses on providing a visual supplement to well-known algorithms. Each algorithm shown in the "Visualization collection" below will at most come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
-
-A secondary goal of *pathviz* is to provide usable implementations for each algorithm. The project has been designed such that added visualization to an existing algorithm function implementation doesn't impact the underlying algorithm runtime speed too much. However, this flexibility might come at the expense of code readability, as function implementations containing both underlying algorithm logic and visualization instructions can get pretty long.
+The primary goal of *pathviz* is providing a visual supplement to well-known algorithms. Each algorithm shown in the "Visualization collection" section below will at most come with a brief snippet of pseudocode to remind the reader of what it does. Complete information can be found in the aforementioned books or elsewhere online.
 
 ## Dependencies
 
@@ -20,9 +18,9 @@ A secondary goal of *pathviz* is to provide usable implementations for each algo
 
 To run existing visualizations on your own device, simply download and build *pathviz* in a ROS catkin workspace and launch the desired roslaunch file located [here](https://github.com/tedklin/pathviz/tree/master/launch)!
 
-If you want to build your own visualizations, *pathviz* provides a small [interface](https://github.com/tedklin/pathviz/tree/master/include/pathviz/visualization) for animating [rviz Markers](http://wiki.ros.org/rviz/DisplayTypes/Marker).
+Visualization animation speeds can be tuned according to preference. If it wasn't obvious, it should be noted that the animations in the "Visualization collection" section below don't reflect the actual wall clock running speed of the algorithm. I'm considering setting up rosparam files for easier adjustment of animation speeds and colors, but I haven't started implementing that yet.
 
-Animation speeds can be tuned according to preference. If it wasn't obvious, it should be noted that the animations below don't reflect the actual wall clock running speed of the algorithm. I'm considering setting up rosparam files for easier adjustment of animation speeds and colors, but I haven't started implementing that yet.
+A secondary goal of *pathviz* is to provide usable, efficient implementations for each algorithm. The project has been designed such that the caller of an algorithm function implementation can control whether visualization is disabled (default) or enabled. With visualization disabled, the function will completely ignore all visualization instructions and run as efficiently as the underlying algorithm logic dictates. However, this flexibility might come at the expense of code readability, as function implementations containing both underlying algorithm logic and visualization instructions can get pretty long.
 
 
 ## Visualization collection:
