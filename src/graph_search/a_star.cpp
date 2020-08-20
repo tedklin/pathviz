@@ -121,6 +121,14 @@ std::stack<const graphlib::Vertex2d*> a_star(
       double weight = adj.second;
 
       if (dist_to_root.at(v2) > dist_to_root.at(v1) + weight) {
+        if (animation_manager) {
+          if (v2->parent_) {
+            const Vertex2d* old_parent =
+                dynamic_cast<const Vertex2d*>(v2->parent_);
+            animation_manager->relaxed_edges_->RemoveLine(
+                {{old_parent->x_, old_parent->y_}, {v2->x_, v2->y_}});
+          }
+        }
         dist_to_root.at(v2) = dist_to_root.at(v1) + weight;
         v2->parent_ = v1;
         if (std::find(min_heap.begin(), min_heap.end(), v2) != min_heap.end()) {

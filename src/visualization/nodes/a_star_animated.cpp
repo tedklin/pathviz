@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
 
   PointDescriptor fringe_descriptor(color::ORANGE, 0.2, 0.04);
   PointDescriptor current_vertex_descriptor(color::GREEN, 0.2, 0.04);
-  PointDescriptor relaxed_vertices_descriptor(color::BLUE, 0.2, 0);
-  LineDescriptor relaxed_edges_descriptor(color::BLUE, 0.03, 0.04);
+  PointDescriptor relaxed_vertices_descriptor(color::PURPLE, 0.2, 0);
+  LineDescriptor relaxed_edges_descriptor(color::PURPLE, 0.03, 0.04);
   LineDescriptor found_path_descriptor(color::YELLOW, 0.1, 0.06);
 
   double update_rate_ms = 500;

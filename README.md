@@ -75,8 +75,8 @@ A secondary goal of *pathviz* is to provide usable, efficient implementations fo
 | black | static Euclidean graph |
 | yellow points | static start and goal points |
 | green | current vertex being expanded / relaxed |
-| blue points | relaxed vertices |
-| blue lines | *currently-known* best path from start point to a relaxed vertex |
+| purple points | relaxed vertices |
+| purple lines | *currently-known* best path from start point to a relaxed vertex |
 | orange | priority queue of vertices to relax next ("fringe") |
 | yellow line | final found path from start to goal points |
 
