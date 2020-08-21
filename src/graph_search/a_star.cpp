@@ -1,6 +1,3 @@
-// Adapted from the implementation of Dijkstra's algorithm in
-// graphlib/algo/weighted_paths.cpp.
-
 #include "pathviz/graph_search/a_star.hpp"
 
 #include <algorithm>
@@ -132,12 +129,8 @@ std::stack<const graphlib::Vertex2d*> a_star(
         dist_to_root.at(v2) = dist_to_root.at(v1) + weight;
         v2->parent_ = v1;
         if (std::find(min_heap.begin(), min_heap.end(), v2) != min_heap.end()) {
-          // If v2 is already in the min-heap, do a complete reheapify of the
-          // underlying vector with v2's updated "g_dist_to_root" value.
           std::make_heap(min_heap.begin(), min_heap.end(), pq_ordering);
         } else {
-          // If v2 is not yet in the min-heap, push it to the back of the
-          // underlying vector, then bubble it up to its proper heap placement.
           min_heap.push_back(v2);
           std::push_heap(min_heap.begin(), min_heap.end(), pq_ordering);
         }
