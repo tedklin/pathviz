@@ -1,5 +1,3 @@
-**Note: This project is currently on hold until I take my school's robot kinematics and dynamics class. My hope is that taking that class will give me a better foundation to build off of for this project.**
-
 # pathviz
 
 This project aims to serve as a growing collection for concrete implementations and intuitive visualizations of classic algorithms related to path planning.
