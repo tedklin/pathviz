@@ -1,5 +1,7 @@
 # pathviz
 
+[![Build Status](https://travis-ci.com/tedklin/pathviz.svg?branch=master)](https://travis-ci.com/tedklin/pathviz)
+
 This project aims to serve as a growing collection for concrete implementations and intuitive visualizations of classic algorithms related to path planning.
 
 ## About
